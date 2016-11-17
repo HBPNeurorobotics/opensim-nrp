@@ -1,0 +1,1 @@
+The opensim-nrp repository contains code and models related to the usage and integration of the OpenSim framework (http://opensim.stanford.edu) with the Neurorobotics Platform of the Human Brain Project.
