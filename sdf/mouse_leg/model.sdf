@@ -128,7 +128,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>model://mouse_v2_model/collisions/COL_obj_thigh.L_convex_hull.dae</uri>
+            <uri>model://mouse_leg/collisions/COL_obj_thigh.L_convex_hull.dae</uri>
           </mesh>
         </geometry>
       </collision>
@@ -136,7 +136,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>model://mouse_v2_model/meshes/obj_thigh.L.dae</uri>
+            <uri>model://mouse_leg/meshes/obj_thigh.L.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -182,7 +182,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>model://mouse_v2_model/collisions/COL_obj_shin.L_convex_hull.dae</uri>
+            <uri>model://mouse_leg/collisions/COL_obj_shin.L_convex_hull.dae</uri>
           </mesh>
         </geometry>
       </collision>
@@ -191,7 +191,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>model://mouse_v2_model/meshes/obj_shin.L.dae</uri>
+            <uri>model://mouse_leg/meshes/obj_shin.L.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -237,7 +237,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>model://mouse_v2_model/collisions/COL_obj_shin_lower.L_convex_hull.dae</uri>
+            <uri>model://mouse_leg/collisions/COL_obj_shin_lower.L_convex_hull.dae</uri>
           </mesh>
         </geometry>
       </collision>
@@ -246,7 +246,7 @@
         <geometry>
           <mesh>
             <scale>1 1 1</scale>
-            <uri>model://mouse_v2_model/meshes/obj_shin_lower.L.dae</uri>
+            <uri>model://mouse_leg/meshes/obj_shin_lower.L.dae</uri>
           </mesh>
         </geometry>
       </visual>
