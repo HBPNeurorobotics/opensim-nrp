@@ -20,12 +20,13 @@ OpenSimSimulation::~OpenSimSimulation()
 
 void OpenSimSimulation::Init()
 {
+  std::cout << "OpenSimSimulation::Init() -- sceneFile: " << sceneFile << std::endl;
   if (!sceneFile.empty())
   {
-    if (boost::filesystem::exists(sceneFile))
+    boost::filesystem::path sceneFilePath = boost::filesystem::canonical(sceneFile);
+    std::cout << " check for scene file: " << sceneFilePath.string() << std::endl;
+    if (boost::filesystem::exists(sceneFilePath.string()))
     {
-      boost::filesystem::path sceneFilePath = boost::filesystem::canonical(sceneFile);
-
       std::string simulationFilePath = sceneFilePath.string();
       osimModel = new OpenSim::Model(simulationFilePath);
       std::cout << "Loaded model: " << osimModel->getName() << std::endl;
@@ -85,7 +86,7 @@ void OpenSimSimulation::Fini()
 
 void OpenSimSimulation::Step()
 {
-  //std::cout << "CoSimulation::Step(" << timeStep << ")" << std::endl;
+  std::cout << "OpenSimSimulation::Step(" << timeStep << ")" << std::endl;
   if (osimModel == NULL)
     return;
 
