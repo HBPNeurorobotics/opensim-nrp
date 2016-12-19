@@ -30,6 +30,13 @@ int main(int argc, char** argv)
 
       simulation->Init();
 
+      simulation->SetTimeStep(0.001);
+
+      for (unsigned int t=0; t < 1000; t++)
+      {
+	simulation->Step();
+      }
+
       simulation->Fini();
       delete simulation;
   }

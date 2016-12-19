@@ -33,7 +33,8 @@ void OpenSimSimulation::Init()
       std::cout << " number of bodies: " << osimModel->getNumBodies() << ", number of contact geometries: " << osimModel->getNumContactGeometries() << std::endl;
       std::cout << " number of joints: " << osimModel->getNumJoints() << std::endl;
 
-      osimModel->setUseVisualizer(true);
+      //osimModel->setUseVisualizer(true);
+      osimModel->setUseVisualizer(false);
 
       // Initialize the system and get the default state
       SimTK::State& isi = osimModel->initSystem();
@@ -52,8 +53,8 @@ void OpenSimSimulation::Init()
       reporter = new OpenSim::ForceReporter(osimModel);
       osimModel->addAnalysis(reporter);
 
-      //integrator = new SimTK::RungeKuttaMersonIntegrator(osimModel->getMultibodySystem());
-      //integrator->setAccuracy(1.0e-6);
+      integrator = new SimTK::RungeKuttaMersonIntegrator(osimModel->getMultibodySystem());
+      integrator->setAccuracy(1.0e-6);
 
       osimManager = new OpenSim::Manager(*osimModel);
     }
@@ -84,11 +85,12 @@ void OpenSimSimulation::Fini()
 
 void OpenSimSimulation::Step()
 {
-  std::cout << "CoSimulation::Step(" << timeStep << ")" << std::endl;
+  //std::cout << "CoSimulation::Step(" << timeStep << ")" << std::endl;
   if (osimModel == NULL)
     return;
 
-  std::cout << " integrate OpenSim from " << currentTime << " to " << (currentTime + timeStep) << std::endl;
+  std::cout << std::endl << "==========================================================================================" << std::endl;
+  std::cout << "Integrate OpenSim from " << currentTime << " to " << (currentTime + timeStep) << std::endl;
 
   try
   {
@@ -96,14 +98,19 @@ void OpenSimSimulation::Step()
     osimManager->setFinalTime(osimManager->getInitialTime() + timeStep);
 
     SimTK::State& ws = osimModel->updWorkingState();
-
+    
+    //std::cout << "State: " << ws.toString() << std::endl;
+    std::cout << "current Q (pos): " << ws.getQ() << std::endl;
+    std::cout << "current U (vel): " << ws.getU() << std::endl;
+    std::cout << "current Z (aux): " << ws.getZ() << std::endl;
+    
     bool status = osimManager->doIntegration(ws, 1, timeStep);
     if (status)
     {
       const SimTK::State& istate =osimManager->getIntegrator().getState();
 
-      // std::cout << " Working state system stage: " << ws.getSystemStage().getName() << std::endl;
-      // std::cout << " Integrator state system stage: " << istate.getSystemStage().getName() << std::endl;
+      //std::cout << " Working state system stage: " << ws.getSystemStage().getName() << std::endl;
+      //std::cout << " Integrator state system stage: " << istate.getSystemStage().getName() << std::endl;
 
       currentTime += timeStep;
 
