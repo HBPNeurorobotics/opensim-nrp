@@ -105,10 +105,64 @@ void OpenSimSimulation::Step()
     std::cout << "current U (vel): " << ws.getU() << std::endl;
     std::cout << "current Z (aux): " << ws.getZ() << std::endl;
     
+    const SimTK::State& istate = osimManager->getIntegrator().getState();
+
+    std::cout << "Stage now: " << istate.getSystemStage().getName() << std::endl;
+
     bool status = osimManager->doIntegration(ws, 1, timeStep);
     if (status)
     {
-      const SimTK::State& istate =osimManager->getIntegrator().getState();
+      std::cout << "Stage after integration: " << istate.getSystemStage().getName() << std::endl;
+
+      std::cout << "new Q (pos): " << istate.getQ() << std::endl;
+      std::cout << "new U (vel): " << istate.getU() << std::endl;
+      std::cout << "new Z (aux): " << istate.getZ() << std::endl;
+
+      /*int jt_ct = osimModel->getMatterSubsystem().getNumConstraints();
+      for (int k = 0; k < jt_ct; ++k)
+      {
+        osimModel->getMatterSubsystem().
+      }*/
+
+      for (int k = 0; k < osimModel->getNumJoints(); ++k)
+      {
+        const OpenSim::Joint& jt = osimModel->getJointSet().get(k);
+        const SimTK::ConstraintIndex ci(k);
+        const SimTK::Constraint& ct = osimModel->getMatterSubsystem().getConstraint(ci);
+
+        osimModel->getMultibodySystem().realize(istate, SimTK::Stage::HighestRuntime);
+
+
+        std::cout << " - Joint " << k << " = " << jt.getName() << std::endl;
+        if (ct.isDisabled(istate))
+        {
+          SimTK::State tmp(istate);
+          ct.enable(tmp);
+
+          SimTK::Vector_<SimTK::SpatialVec> ct_forces = ct.getConstrainedBodyForcesAsVector(istate);
+          std::cout << ct_forces << std::endl;
+        }
+//        try
+//        {
+//          if (istate.getSystemStage() == SimTK::Stage::Dynamics)
+//          {
+//            SimTK::State tmp(istate);
+//            if (tmp.getSystemStage() == SimTK::Stage::Dynamics)
+//            {
+//              ct.enable(tmp);
+//              if (!ct.isDisabled(tmp))
+//              {
+//                std::cout << ct.getConstrainedMobilityForcesAsVector(tmp) << std::endl;
+//                std::cout << ct.getConstrainedBodyForcesAsVector(tmp) << std::endl;
+//              }
+//            }
+//          }
+//        }
+//        catch (SimTK::Exception::ErrorCheck& ex)
+//        {
+
+//        }
+      }
 
       //std::cout << " Working state system stage: " << ws.getSystemStage().getName() << std::endl;
       //std::cout << " Integrator state system stage: " << istate.getSystemStage().getName() << std::endl;
