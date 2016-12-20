@@ -3,13 +3,16 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/path.hpp>
 
-OpenSimSimulation::OpenSimSimulation(const std::string& simulation_name, const std::string& scene_file): currentTime(0.0), timeStep(0.0), simulationName(simulation_name), sceneFile(scene_file)
+#include <OpenSim/Simulation/Model/ModelComponent.h>
+#include <OpenSim/Simulation/Model/ComponentSet.h>
+#include <OpenSim/Simulation/Model/ModelComponentSet.h>
+
+OpenSimSimulation::OpenSimSimulation(const std::string& simulation_name, const std::string& scene_file): currentTime(0.0), timeStep(0.0), simulationName(simulation_name), sceneFile(scene_file), useVisualization(false)
 {
   osimModel = NULL;
   osimManager = NULL;
   reporter = NULL;
   integrator = NULL;
-  si = NULL;
 
   ///
   jointReactionAnalysis = NULL;
@@ -38,7 +41,7 @@ void OpenSimSimulation::Init()
       std::cout << " number of joints: " << osimModel->getNumJoints() << std::endl;
 
       //osimModel->setUseVisualizer(true);
-      osimModel->setUseVisualizer(false);
+      osimModel->setUseVisualizer(this->useVisualization);
 
       // Initialize the system and get the default state
       SimTK::State& isi = osimModel->initSystem();
@@ -53,6 +56,10 @@ void OpenSimSimulation::Init()
       }
 
       osimModel->equilibrateMuscles(isi);
+
+      this->si = osimModel->initializeState();
+
+      contactTracker = new SimTK::ContactTrackerSubsystem(osimModel->updMultibodySystem());
 
       reporter = new OpenSim::ForceReporter(osimModel);
       osimModel->addAnalysis(reporter);
@@ -96,10 +103,10 @@ void OpenSimSimulation::Init()
 
       std::cout << "forces with record labels: " << std::endl;
       for (int u = 0; u < forces.getSize(); u++)
-	{
-	  OpenSim::Force *force = &(forces[u]);
-	  std::cout << force->getName() << ": " << force->getRecordLabels() << "--- " ;
-	}
+      {
+        OpenSim::Force *force = &(forces[u]);
+        std::cout << force->getName() << ": " << force->getRecordLabels() << std::endl;
+      }
       std::cout << std::endl;
 
       ////
@@ -120,6 +127,11 @@ void OpenSimSimulation::Fini()
     delete osimManager;
     osimManager = NULL;
 
+    delete contactTracker;
+    contactTracker = NULL;
+
+    reporter->print("test.out");
+
     osimModel->removeAnalysis(reporter);
     delete reporter;
     reporter = NULL;
@@ -136,7 +148,7 @@ void OpenSimSimulation::Fini()
       /*SimTK::State asd = osimModel->getWorkingState();
       
 	jointReactionAnalysis->end(asd);*/
-      jointReactionAnalysis->printResults("jointReactionResults","~/tmp/");
+      jointReactionAnalysis->printResults("jointReactionResults","/tmp/");
       
       osimModel->removeAnalysis(jointReactionAnalysis);
     
@@ -164,17 +176,114 @@ void OpenSimSimulation::Step()
     osimManager->setInitialTime(currentTime);
     osimManager->setFinalTime(osimManager->getInitialTime() + timeStep);
 
+    if (!osimModel->isValidSystem())
+    {
+      std::cout << "Call initializeState..." << std::endl;
+      SimTK::State& initial_state = osimModel->initializeState();
+      std::cout << "Result: " << initial_state << std::endl;
+    }
     SimTK::State& ws = osimModel->updWorkingState();
     
     //std::cout << "State: " << ws.toString() << std::endl;
     std::cout << "current Q (pos): " << ws.getQ() << std::endl;
     std::cout << "current U (vel): " << ws.getU() << std::endl;
     std::cout << "current Z (aux): " << ws.getZ() << std::endl;
+
     bool status = osimManager->doIntegration(ws, 1, timeStep);
     if (status)
     {
-      const SimTK::State& istate =osimManager->getIntegrator().getState();
       //jointReactionAnalysis->step(istate,1);
+
+      const SimTK::State& istate = osimManager->getIntegrator().getState();
+
+      std::cout << "Stage after integration: " << istate.getSystemStage().getName() << std::endl;
+
+      std::cout << "new Q (pos): " << istate.getQ() << std::endl;
+      std::cout << "new U (vel): " << istate.getU() << std::endl;
+      std::cout << "new Z (aux): " << istate.getZ() << std::endl;
+
+      const SimTK::GeneralContactSubsystem& contactSystem = osimModel->getMultibodySystem().getContactSubsystem();
+      int contactSetsCount = contactSystem.getNumContactSets();
+
+      std::cout << "=== contacts: " << contactSetsCount << " ===" << std::endl;
+      for (int k = 0; k < contactSetsCount; ++k)
+      {
+        SimTK::ContactSetIndex csi(k);
+        const SimTK::Array_<SimTK::Contact>& contacts = contactSystem.getContacts(istate, csi);
+
+        std::cout << " - Set " << k << ": " << contacts.size() << " entries." << std::endl;
+        for (int l = 0; l < contacts.size(); ++l)
+        {
+          SimTK::Contact contact = contacts.at(l);
+          std::cout << "   - Set " << k << ", entry " << l << ": " << contact << std::endl;
+
+          if (SimTK::PointContact::isInstance(contact))
+          {
+            std::cout << "     -> PointContact." << std::endl;
+            const SimTK::PointContact& c = static_cast<const SimTK::PointContact&>(contact);
+            std::cout << "        depth = " << c.getDepth() << ", normal = " << c.getNormal() << std::endl;
+          }
+          else if (SimTK::CircularPointContact::isInstance(contact))
+          {
+            std::cout << "     -> CircularPointContact." << std::endl;
+            const SimTK::CircularPointContact& c = static_cast<const SimTK::CircularPointContact&>(contact);
+            std::cout << "        " << c << std::endl;
+          }
+          else if (SimTK::EllipticalPointContact::isInstance(contact))
+          {
+            std::cout << "     -> EllipticalPointContact." << std::endl;
+            const SimTK::EllipticalPointContact& c = static_cast<const SimTK::EllipticalPointContact&>(contact);
+            std::cout << "        " << c << std::endl;
+          }
+        }
+      }
+
+      /*int jt_ct = osimModel->getMatterSubsystem().getNumConstraints();
+      for (int k = 0; k < jt_ct; ++k)
+      {
+
+      }*/
+
+      std::cout << "=== Joints: " << osimModel->getNumJoints() << " ===" << std::endl;
+      for (int k = 0; k < osimModel->getNumJoints(); ++k)
+      {
+        const OpenSim::Joint& jt = osimModel->getJointSet().get(k);
+        const SimTK::ConstraintIndex ci(k);
+        const SimTK::Constraint& ct = osimModel->getMatterSubsystem().getConstraint(ci);
+
+        osimModel->getMultibodySystem().realize(istate, SimTK::Stage::HighestRuntime);
+
+        std::cout << " - Joint " << k << " = " << jt.getName() << std::endl;
+
+        /*if (ct.isDisabled(istate))
+        {
+          SimTK::State tmp(istate);
+          ct.enable(tmp);
+
+          SimTK::Vector_<SimTK::SpatialVec> ct_forces = ct.getConstrainedBodyForcesAsVector(istate);
+          std::cout << ct_forces << std::endl;
+        }
+        try
+        {
+          if (istate.getSystemStage() == SimTK::Stage::Dynamics)
+          {
+            SimTK::State tmp(istate);
+            if (tmp.getSystemStage() == SimTK::Stage::Dynamics)
+            {
+              ct.enable(tmp);
+              if (!ct.isDisabled(tmp))
+              {
+                std::cout << ct.getConstrainedMobilityForcesAsVector(tmp) << std::endl;
+                std::cout << ct.getConstrainedBodyForcesAsVector(tmp) << std::endl;
+              }
+            }
+          }
+        }
+        catch (SimTK::Exception::ErrorCheck& ex)
+        {
+
+        }*/
+      }
 
       //std::cout << " Working state system stage: " << ws.getSystemStage().getName() << std::endl;
       //std::cout << " Integrator state system stage: " << istate.getSystemStage().getName() << std::endl;
@@ -184,79 +293,69 @@ void OpenSimSimulation::Step()
       //// 
       const OpenSim::ForceSet& forces = osimModel->getForceSet();
 
-      std::cout << "forces: " << std::endl;
+      std::cout << "=== Forces: " << forces.getSize() << " ===" << std::endl;
       for (int u = 0; u < forces.getSize(); u++)
-	{
-	  OpenSim::Force *force = &(forces[u]);
-	  std::cout << force->getName() << ": " << force->getRecordValues(istate) << "--- " ;
-	}
-      std::cout << std::endl;
-      //// 
-      
+      {
+        OpenSim::Force *force = &(forces[u]);
 
-      /*if (this->openSimPub && !transport::getMinimalComms())
+
+        std::cout << " * " << force->getName() << " of class " << force->getClassName() << ": " << std::endl;
+
+        OpenSim::Array<double> fValues = force->getRecordValues(istate);
+        OpenSim::Array<std::string> fLabels = force->getRecordLabels();
+
+        for (int m = 0; m < fLabels.size(); ++m)
+          std::cout << fLabels[m] << " = " << fValues[m] << ";";
+
+        std::cout << std::endl;
+        SimTK::ForceIndex force_idx = force->getForceIndex();
+        const SimTK::Force& simTkForce = osimModel->getForceSubsystem().getForce(force_idx);
+        if (SimTK::HuntCrossleyForce::isInstanceOf(simTkForce))
         {
-          msgs::OpenSimMuscles muscles_msg;
+          const SimTK::HuntCrossleyForce* hkf = (const SimTK::HuntCrossleyForce*)(&simTkForce);
+          std::cout << "  HuntCrossleyForce: " << hkf->getTransitionVelocity() << std::endl;
+        }
 
-          if (osimModel->getBodySet().contains("block"))
-          {
-            std::cout << "Found Gazebo visual to synchronize: block" << std::endl;
-            const OpenSim::Body& blockBody = osimModel->getBodySet().get("block");
-            const SimTK::MobilizedBodyIndex& bodyIndex = blockBody.getIndex();
-            const SimTK::MobilizedBody& simTkBody = osimModel->getMultibodySystem().getMatterSubsystem().getMobilizedBody(bodyIndex);
-            const SimTK::Transform& bodyTransform = simTkBody.getBodyTransform(istate);
+        if (SimTK::ElasticFoundationForce::isInstanceOf(simTkForce))
+        {
+          const SimTK::ElasticFoundationForce* eff = (const SimTK::ElasticFoundationForce*)(&simTkForce);
+          std::cout << "  ElasticFoundationForce: " << eff->getTransitionVelocity() << std::endl;
+        }
+      }
+      std::cout << std::endl;
 
-            muscles_msg.set_osobj_name(blockBody.getName());
-            muscles_msg.mutable_osobj_position()->set_x(bodyTransform.p()[0]);
-            muscles_msg.mutable_osobj_position()->set_y(bodyTransform.p()[1]);
-            muscles_msg.mutable_osobj_position()->set_z(bodyTransform.p()[2]);
-          }
+      const OpenSim::ComponentSet& mcs = osimModel->getMiscModelComponentSet();
+      std::cout << "=== Model components: " << mcs.getSize() << " ===" << std::endl;
+      for (int k = 0; k < mcs.getSize(); ++k)
+      {
+        OpenSim::ModelComponent& mk = mcs[k];
+        std::cout << " -> " << mk.getName() << mk.getClassName() << std::endl;
+      }
 
-          const OpenSim::Set<OpenSim::Muscle>& muscles = osimModel->getMuscles();
-          for (int k = 0; k < muscles.getSize(); ++k)
-          {
-            msgs::OpenSimMuscle* muscle_msg = muscles_msg.add_muscle();
-            OpenSim::Muscle& muscle = muscles[k];
-            double mfl = muscle.getFiberLength(istate);
-            double mfv = muscle.getFiberVelocity(istate);
-            double mff = muscle.getFiberForce(istate);
+      if (istate.getNumSubsystems() > 0)
+      {
+        // get contact snapshot
+        SimTK::Real dummy;
+        bool active_ct_state = contactTracker->realizeActiveContacts(istate, false, dummy);
+        if (active_ct_state)
+          std::cout << "Tracker updated active contacts." << std::endl;
+        else
+          std::cout << "Tracker failed updating active contacts!" << std::endl;
 
-            //double mfl = muscle.getTendonLength(istate);
-            //double mfv = muscle.getTendonVelocity(istate);
-            //double mff = muscle.getTendonForce(istate);
+        bool pred_ct_state = contactTracker->realizePredictedContacts(istate, false, dummy);
+        if (pred_ct_state)
+          std::cout << "Tracker updated predicted contacts." << std::endl;
+        else
+          std::cout << "Tracker failed updating predicted contacts!" << std::endl;
 
-            muscle_msg->set_name(muscle.getName());
-            muscle_msg->set_fiberlength(mfl);
-            muscle_msg->set_fibervelocity(mfv);
-            muscle_msg->set_fiberforce(mff);
+        const SimTK::ContactSnapshot &contactSnapshot =
+          this->contactTracker->getActiveContacts(istate);
 
-            OpenSim::Array<OpenSim::PathPoint*> current_path = muscle.getGeometryPath().getCurrentPath(istate);
-            const OpenSim::PathPointSet& muscle_path = muscle.getGeometryPath().getPathPointSet();
+        int numc = contactSnapshot.getNumContacts();
+        std::cout << "=== Contact count in contactTracker: " << numc << " ===" << std::endl;
+      }
 
-            if (muscle_path.getSize() == 2 && current_path.getSize() == 2)
-            {
-
-              OpenSim::PathPoint* pt_1 = current_path.get(0);
-              OpenSim::PathPoint* pt_2 = current_path.get(1);
-
-              muscle_msg->mutable_attachment_1()->set_x(pt_1->getLocation()[0]);
-              muscle_msg->mutable_attachment_1()->set_y(pt_1->getLocation()[1]);
-              muscle_msg->mutable_attachment_1()->set_z(pt_1->getLocation()[2]);
-
-              muscle_msg->mutable_attachment_2()->set_x(pt_2->getLocation()[0]);
-              muscle_msg->mutable_attachment_2()->set_y(pt_2->getLocation()[1]);
-              muscle_msg->mutable_attachment_2()->set_z(pt_2->getLocation()[2]);
-              std::cout << " - muscle " << k << ": attachment_1 = " << pt_1->getLocation()[0] << "," << pt_1->getLocation()[1] << "," << pt_1->getLocation()[2]
-                        << ", attachment_2 = " << pt_2->getLocation()[0] << "," << pt_2->getLocation()[1] << "," << pt_2->getLocation()[2]
-                        << ", fiber length = " << mfl << ", fiber velocity = " << mfv << ", fiber force = " << mff << std::endl;
-
-
-            }
-          }
-
-          msgs::Set(muscles_msg.mutable_time(), simTime);
-          this->openSimPub->Publish(muscles_msg);
-        }*/
+      // std::cout << "State dump istate: " << std::endl << istate << std::endl;
     }
     else
     {
@@ -266,5 +365,6 @@ void OpenSimSimulation::Step()
   catch (OpenSim::Exception& ex)
   {
     std::cerr << "OpenSim exception: " << ex.getMessage() << std::endl;
+    std::cerr << ex.what() << std::endl;
   }
 }
