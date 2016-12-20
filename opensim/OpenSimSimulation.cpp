@@ -10,6 +10,9 @@ OpenSimSimulation::OpenSimSimulation(const std::string& simulation_name, const s
   reporter = NULL;
   integrator = NULL;
   si = NULL;
+
+  ///
+  jointReactionAnalysis = NULL;
 }
 
 OpenSimSimulation::~OpenSimSimulation()
@@ -58,6 +61,54 @@ void OpenSimSimulation::Init()
       integrator->setAccuracy(1.0e-6);
 
       osimManager = new OpenSim::Manager(*osimModel);
+
+      //////////////
+      const OpenSim::JointSet& joints = osimModel->getJointSet();
+      int numJoints = osimModel->getNumJoints();
+
+      OpenSim::Array< std::string > jointNames;
+      
+      std::cout << "joint ranges: " << std::endl;
+      for (int u = 0; u < numJoints; u++)
+	{
+	  OpenSim::Joint *joint = &(joints[u]);	  
+	  jointNames.append(joint->getName());
+	    
+	  OpenSim::CoordinateSet jointCoordinates = joint->getCoordinateSet();
+	  OpenSim::Coordinate coordinate = jointCoordinates[0];
+	  std::cout << coordinate.getRangeMin() << ", " << coordinate.getRangeMax()  << " --- " ;
+	}
+      std::cout << std::endl;
+
+      ////
+      const OpenSim::ConstraintSet& constraints = osimModel->getConstraintSet();
+
+      std::cout << "constraints: " << std::endl;
+      for (int u = 0; u < constraints.getSize(); u++)
+	{
+	  OpenSim::Constraint *constraint = &(constraints[u]);
+	  std::cout << constraint->getName() << "--- " ;
+	}
+      std::cout << std::endl;
+
+      //// 
+      const OpenSim::ForceSet& forces = osimModel->getForceSet();
+
+      std::cout << "forces with record labels: " << std::endl;
+      for (int u = 0; u < forces.getSize(); u++)
+	{
+	  OpenSim::Force *force = &(forces[u]);
+	  std::cout << force->getName() << ": " << force->getRecordLabels() << "--- " ;
+	}
+      std::cout << std::endl;
+
+      ////
+      jointReactionAnalysis = new OpenSim::JointReaction();
+      //jointReactionAnalysis->setJointNames(jointNames);
+      jointReactionAnalysis->setModel(*osimModel);
+      osimModel->addAnalysis(jointReactionAnalysis);
+
+      //jointReactionAnalysis->begin(isi);
     }
   }
 }
@@ -79,6 +130,21 @@ void OpenSimSimulation::Fini()
       integrator = NULL;
     }
 
+    ////
+    if (jointReactionAnalysis)
+    {
+      /*SimTK::State asd = osimModel->getWorkingState();
+      
+	jointReactionAnalysis->end(asd);*/
+      jointReactionAnalysis->printResults("jointReactionResults","~/tmp/");
+      
+      osimModel->removeAnalysis(jointReactionAnalysis);
+    
+      delete jointReactionAnalysis;
+      jointReactionAnalysis = NULL;
+    }
+    ////
+
     delete osimModel;
     osimModel = NULL;
   }
@@ -86,7 +152,7 @@ void OpenSimSimulation::Fini()
 
 void OpenSimSimulation::Step()
 {
-  std::cout << "OpenSimSimulation::Step(" << timeStep << ")" << std::endl;
+  //std::cout << "OpenSimSimulation::Step(" << timeStep << ")" << std::endl;
   if (osimModel == NULL)
     return;
 
@@ -104,16 +170,29 @@ void OpenSimSimulation::Step()
     std::cout << "current Q (pos): " << ws.getQ() << std::endl;
     std::cout << "current U (vel): " << ws.getU() << std::endl;
     std::cout << "current Z (aux): " << ws.getZ() << std::endl;
-    
     bool status = osimManager->doIntegration(ws, 1, timeStep);
     if (status)
     {
       const SimTK::State& istate =osimManager->getIntegrator().getState();
+      //jointReactionAnalysis->step(istate,1);
 
       //std::cout << " Working state system stage: " << ws.getSystemStage().getName() << std::endl;
       //std::cout << " Integrator state system stage: " << istate.getSystemStage().getName() << std::endl;
 
       currentTime += timeStep;
+
+      //// 
+      const OpenSim::ForceSet& forces = osimModel->getForceSet();
+
+      std::cout << "forces: " << std::endl;
+      for (int u = 0; u < forces.getSize(); u++)
+	{
+	  OpenSim::Force *force = &(forces[u]);
+	  std::cout << force->getName() << ": " << force->getRecordValues(istate) << "--- " ;
+	}
+      std::cout << std::endl;
+      //// 
+      
 
       /*if (this->openSimPub && !transport::getMinimalComms())
         {

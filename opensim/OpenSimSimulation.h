@@ -40,7 +40,9 @@ class OpenSimSimulation
       OpenSim::Manager* osimManager;
       OpenSim::ForceReporter* reporter;
       SimTK::RungeKuttaMersonIntegrator* integrator;
-      SimTK::State* si;  
+      SimTK::State* si;
+
+      OpenSim::JointReaction *jointReactionAnalysis;
 };
 
 #endif //OPENSIM_SIMULATION_H
