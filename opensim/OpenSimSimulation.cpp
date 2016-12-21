@@ -210,7 +210,7 @@ void OpenSimSimulation::Step()
       for (int k = 0; k < osimModel->getNumJoints(); ++k)
       {
         const OpenSim::Joint& jt = osimModel->getJointSet().get(k);
-        const SimTK::ConstraintIndex ci(k);
+        /*const SimTK::ConstraintIndex ci(k);
         const SimTK::Constraint& ct = osimModel->getMatterSubsystem().getConstraint(ci);
 
         std::cout << " - Joint " << k << " = " << jt.getName() << std::endl;
@@ -225,21 +225,21 @@ void OpenSimSimulation::Step()
 
         const SimTK::Constraint::Weld* wj = dynamic_cast<const SimTK::Constraint::Weld*>(&ct);
         if (wj)
-          std::cout << "   SimBody: Weld joint." << std::endl;
+          std::cout << "   SimBody: Weld joint." << std::endl;*/
 
-
-        /*osimModel->getMultibodySystem().realize(istate, SimTK::Stage::HighestRuntime);
-
-
-
-        if (ct.isDisabled(istate))
+        const OpenSim::CoordinateSet& ocs = jt.getCoordinateSet();
+        for (int n = 0; n < ocs.getSize(); ++n)
         {
-          SimTK::State tmp(istate);
-          ct.enable(tmp);
+          const OpenSim::Coordinate& coord = ocs.get(n);
 
-          SimTK::Vector_<SimTK::SpatialVec> ct_forces = ct.getConstrainedBodyForcesAsVector(istate);
-          std::cout << ct_forces << std::endl;
-        }*/
+          const SimTK::ConstraintIndex& lci = coord.getLockedConstraintIndex();
+          const SimTK::ConstraintIndex& cci = coord.getClampedConstraintIndex();
+          const SimTK::ConstraintIndex& pci = coord.getPrescribedConstraintIndex();
+
+          osimModel->getMatterSubsystem().getConstraint(lci);
+          osimModel->getMatterSubsystem().getConstraint(cci);
+          osimModel->getMatterSubsystem().getConstraint(pci);
+        }
       }
       //jointReactionAnalysis->step(istate,1);
 

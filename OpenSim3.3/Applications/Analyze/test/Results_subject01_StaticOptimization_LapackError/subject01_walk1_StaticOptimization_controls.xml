@@ -1,0 +1,1412 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="30000">
+	<ControlSet name="Control Set">
+		<objects>
+			<ControlLinear name="glut_med1_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0895436144702889</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0624882648277074</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.110623679336303</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="glut_med2_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.101818344711788</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0646941427572373</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.114897462204305</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="glut_med3_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.1189998789182</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0740197410731332</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.101711221925345</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="bifemlh_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.00385015103584816</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0178824889888497</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.0178485273898433</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="bifemsh_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.2401623571679</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.19057251471192</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.289817676785321</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="sar_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.129156472508162</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.133061214315915</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.189369212733926</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="add_mag2_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.00321689845830823</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0151889954862775</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.0175069015647927</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="tfl_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.121348668683555</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.111082431992678</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.169336889161134</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="pect_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0638361833390405</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.103623679119565</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.137221020573165</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="grac_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0500807733707221</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.103484409341544</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.129189060789086</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="glut_max1_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0503415893617997</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0682768001619287</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.0971109758553055</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="glut_max2_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0300232373784977</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.051433673193704</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.0726213744398907</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="glut_max3_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0121891159054689</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0431662141327195</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.37556003328031</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="iliacus_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.227562276968439</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.198359683341771</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.284097684746511</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="psoas_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.234682458819634</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.201909944412005</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.290199925609408</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="quad_fem_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0555921024832058</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0963501321871448</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.090114729376102</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="gem_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0640107641263331</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.102434892321988</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.130296688646612</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="peri_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0717697068810087</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.101179365915853</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.125667056873692</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="rect_fem_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0721706127317877</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0926501696391531</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.136298357547273</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="vas_int_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.00567271189292815</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0115133608873984</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.0298210428409982</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="med_gas_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>1.37779418626356e-009</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>4.89237071409145e-005</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>1.23646788666952e-007</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="soleus_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>4.226760437311e-005</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>1.08658390183481e-007</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="tib_post_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>3.92693248703113e-005</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>9.9651240155281e-008</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="tib_ant_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.00218550918874504</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.00101590101314266</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.00250503522441499</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="glut_med1_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.653807582803686</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.558227722229976</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.622636400616005</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="glut_med2_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.312519186736744</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.268510783408945</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.222370557927996</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="glut_med3_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.129776385538768</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.111284310300596</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.104189026885179</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="bifemlh_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0384004023571703</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0451893314402831</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.0650000586540349</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="bifemsh_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.133239156498044</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.160119686931301</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.209558966880503</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="sar_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0967039359843653</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.114956265996565</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.162206922978806</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="add_mag2_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.00454632009465872</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.009138462230593</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.0218003420704399</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="tfl_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.150261888755082</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.160158714680216</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.202513524272372</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="pect_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0393978317354996</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0712574576442657</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.112996325773709</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="grac_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0408209862838731</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0696547489030719</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.111347677532558</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="glut_max1_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0754184913224122</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0903347361240186</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.117929094420248</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="glut_max2_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0696438296951202</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0619962960333374</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.0899100275021972</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="glut_max3_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0211937413041815</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0282653175820874</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.0661632437792953</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="iliacus_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0698231052485668</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.120334141378489</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.204775327952427</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="psoas_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0646477063127003</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.116625903362653</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.197994018752523</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="quad_fem_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0154783602074301</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0210259931036863</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.0563116043626183</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="gem_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0439222222980257</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0617582354338338</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.107266554116905</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="peri_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0734729995967714</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.06814924085717</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.108401182159118</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="rect_fem_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0205667912203358</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0355574701347798</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.0870607015344811</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="vas_int_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0051146400527846</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.00870291195440952</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.0193207628453103</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="med_gas_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.415987383668408</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.397074104552069</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.450829503490418</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="soleus_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.08568617271862</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0841534753286398</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.0838989707668132</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="tib_post_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.138048550209881</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.134885957292174</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.119894316800532</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="tib_ant_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.121694866265538</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.109667414699684</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.144760440003169</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="ercspn_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.172435840365573</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.185964009140485</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.214541899646862</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="ercspn_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.103098249025862</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.14293204619274</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.19550506719413</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="intobl_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0776190654048724</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0832306228401382</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.100412341022909</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="intobl_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0309562854493806</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0650647397623423</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.0996876950367517</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="extobl_r">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0347395748062235</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0609595213915805</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.0903684457564579</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+			<ControlLinear name="extobl_l">
+				<is_model_control>true</is_model_control>
+				<extrapolate>true</extrapolate>
+				<default_min>0.02</default_min>
+				<default_max>1</default_max>
+				<filter_on>false</filter_on>
+				<use_steps>false</use_steps>
+				<x_nodes>
+					<ControlLinearNode>
+						<t>0.407999999999998</t>
+						<value>0.0390489971698671</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.423999999999998</t>
+						<value>0.0562771057697076</value>
+					</ControlLinearNode>
+					<ControlLinearNode>
+						<t>0.439999999999998</t>
+						<value>0.0878857375516619</value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes />
+				<max_nodes />
+				<kp>100</kp>
+				<kv>20</kv>
+			</ControlLinear>
+		</objects>
+		<groups />
+	</ControlSet>
+</OpenSimDocument>

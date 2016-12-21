@@ -1,0 +1,188 @@
+AbstractTool subject01_walk1 loading model 'subject01.osim'
+Updating Model file from 10901 to latest format...
+Loaded model subject01 from file subject01.osim
+Old version storage/motion file encountered
+Storage: file=subject01_walk1_grf.mot (nr=9009 nc=19)
+.. assuming rotations in Degrees.
+Old version storage/motion file encountered
+Storage: file=subject01_walk1_grf.mot (nr=9009 nc=19)
+.. assuming rotations in Degrees.
+ExternalForce::RightForce
+Data source being set to subject01_walk1_grf.mot
+ExternalForce::LeftForce
+Data source being set to subject01_walk1_grf.mot
+Old version storage/motion file encountered
+Storage: file=subject01_walk1_ik.mot (nr=73 nc=165)
+.. assuming rotations in Degrees.
+ExternalForce::RightForce_transformedP
+Data source being set to subject01_walk1_grf.mot_transformedP
+ExternalForce::LeftForce_transformedP
+Data source being set to subject01_walk1_grf.mot_transformedP
+
+Loading coordinates from file subject01_walk1_ik.mot.
+Old version storage/motion file encountered
+Storage: file=subject01_walk1_ik.mot (nr=73 nc=165)
+.. assuming rotations in Degrees.
+
+
+Low-pass filtering coordinates data with a cutoff frequency of 6...
+
+Found 151 state vectors with time stamps ranging from -0.2 to 2.2.
+Executing the analyses from 0.408 to 0.44...
+SimTK Exception thrown at InteriorPointOptimizer.cpp:261:
+  Optimizer failed: Ipopt: Maximum iterations exceeded (status -1)
+OPTIMIZATION FAILED...
+
+StaticOptimization.record:  WARN- The optimizer could not find a solution at time = 0.408
+
+The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_tilt: constraint violation = -5.84176
+   pelvis_list: constraint violation = -0.594113
+   pelvis_rotation: constraint violation = -7.73657
+   pelvis_tx: constraint violation = -0.000357815
+   pelvis_ty: constraint violation = 0.379851
+   pelvis_tz: constraint violation = 0.140883
+   hip_flexion_r: constraint violation = 9.32561
+   hip_adduction_r: constraint violation = 2.62654
+   hip_rotation_r: constraint violation = -6.2949
+   knee_angle_r: constraint violation = -3.12196
+   ankle_angle_r: constraint violation = 88.3204
+   subtalar_angle_r: constraint violation = -80.0867
+   mtp_angle_r: constraint violation = 42.0784
+   hip_flexion_l: constraint violation = 7.22156
+   hip_adduction_l: constraint violation = 7.14164
+   hip_rotation_l: constraint violation = 11.7947
+   knee_angle_l: constraint violation = -10.5437
+   ankle_angle_l: constraint violation = 477.328
+   subtalar_angle_l: constraint violation = -87.8925
+   mtp_angle_l: constraint violation = -1098.52
+   lumbar_extension: constraint violation = 6.1866
+   lumbar_bending: constraint violation = -1.0294
+   lumbar_rotation: constraint violation = 7.51973
+
+
+time = 0.408 Performance =1.14503 Constraint violation = 1207.88
+Bounds for glut_med1_r: 0 to 1
+Bounds for glut_med2_r: 0 to 1
+Bounds for glut_med3_r: 0 to 1
+Bounds for bifemlh_r: 0 to 1
+Bounds for bifemsh_r: 0 to 1
+Bounds for sar_r: 0 to 1
+Bounds for add_mag2_r: 0 to 1
+Bounds for tfl_r: 0 to 1
+Bounds for pect_r: 0 to 1
+Bounds for grac_r: 0 to 1
+Bounds for glut_max1_r: 0 to 1
+Bounds for glut_max2_r: 0 to 1
+Bounds for glut_max3_r: 0 to 1
+Bounds for iliacus_r: 0 to 1
+Bounds for psoas_r: 0 to 1
+Bounds for quad_fem_r: 0 to 1
+Bounds for gem_r: 0 to 1
+Bounds for peri_r: 0 to 1
+Bounds for rect_fem_r: 0 to 1
+Bounds for vas_int_r: 0 to 1
+Bounds for med_gas_r: 0 to 1
+Bounds for soleus_r: 0 to 1
+Bounds for tib_post_r: 0 to 1
+Bounds for tib_ant_r: 0 to 1
+Bounds for glut_med1_l: 0 to 1
+Bounds for glut_med2_l: 0 to 1
+Bounds for glut_med3_l: 0 to 1
+Bounds for bifemlh_l: 0 to 1
+Bounds for bifemsh_l: 0 to 1
+Bounds for sar_l: 0 to 1
+Bounds for add_mag2_l: 0 to 1
+Bounds for tfl_l: 0 to 1
+Bounds for pect_l: 0 to 1
+Bounds for grac_l: 0 to 1
+Bounds for glut_max1_l: 0 to 1
+Bounds for glut_max2_l: 0 to 1
+Bounds for glut_max3_l: 0 to 1
+Bounds for iliacus_l: 0 to 1
+Bounds for psoas_l: 0 to 1
+Bounds for quad_fem_l: 0 to 1
+Bounds for gem_l: 0 to 1
+Bounds for peri_l: 0 to 1
+Bounds for rect_fem_l: 0 to 1
+Bounds for vas_int_l: 0 to 1
+Bounds for med_gas_l: 0 to 1
+Bounds for soleus_l: 0 to 1
+Bounds for tib_post_l: 0 to 1
+Bounds for tib_ant_l: 0 to 1
+Bounds for ercspn_r: 0 to 1
+Bounds for ercspn_l: 0 to 1
+Bounds for intobl_r: 0 to 1
+Bounds for intobl_l: 0 to 1
+Bounds for extobl_r: 0 to 1
+Bounds for extobl_l: 0 to 1
+SimTK Exception thrown at InteriorPointOptimizer.cpp:261:
+  Optimizer failed: Ipopt: Infeasible problem detected (status 2)
+OPTIMIZATION FAILED...
+
+StaticOptimization.record:  WARN- The optimizer could not find a solution at time = 0.424
+
+The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_tilt: constraint violation = -0.0460145
+   pelvis_list: constraint violation = 0.399133
+   pelvis_rotation: constraint violation = -0.0587024
+   pelvis_tx: constraint violation = 0.000208954
+   pelvis_ty: constraint violation = 0.716568
+   pelvis_tz: constraint violation = -0.00347705
+   hip_flexion_r: constraint violation = 0.374051
+   hip_adduction_r: constraint violation = -0.0164591
+   hip_rotation_r: constraint violation = 0.0266818
+   knee_angle_r: constraint violation = 0.0117415
+   ankle_angle_r: constraint violation = 105.12
+   subtalar_angle_r: constraint violation = -26.2701
+   mtp_angle_r: constraint violation = 0.20191
+   hip_flexion_l: constraint violation = 0.432972
+   hip_adduction_l: constraint violation = -0.369523
+   hip_rotation_l: constraint violation = 0.0487714
+   knee_angle_l: constraint violation = 0.13209
+   ankle_angle_l: constraint violation = 47.8679
+   subtalar_angle_l: constraint violation = -0.846112
+   mtp_angle_l: constraint violation = 0.978618
+   lumbar_extension: constraint violation = -0.0141243
+   lumbar_bending: constraint violation = 0.0199352
+   lumbar_rotation: constraint violation = -0.020629
+
+
+time = 0.424 Performance =1.02176 Constraint violation = 118.467
+SimTK Exception thrown at InteriorPointOptimizer.cpp:261:
+  Optimizer failed: Ipopt: Maximum iterations exceeded (status -1)
+OPTIMIZATION FAILED...
+
+StaticOptimization.record:  WARN- The optimizer could not find a solution at time = 0.44
+
+The model appears unsuitable for static optimization.
+Try appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):
+   pelvis_tilt: constraint violation = -0.324411
+   pelvis_list: constraint violation = 0.733118
+   pelvis_rotation: constraint violation = -0.0168759
+   pelvis_tx: constraint violation = -0.00070851
+   pelvis_ty: constraint violation = 0.129499
+   pelvis_tz: constraint violation = 0.00841175
+   hip_flexion_r: constraint violation = 1.74144
+   hip_adduction_r: constraint violation = -0.637045
+   hip_rotation_r: constraint violation = 0.111288
+   knee_angle_r: constraint violation = 0.109681
+   ankle_angle_r: constraint violation = 81.3819
+   subtalar_angle_r: constraint violation = -39.8297
+   mtp_angle_r: constraint violation = 63.0125
+   hip_flexion_l: constraint violation = -0.92412
+   hip_adduction_l: constraint violation = -0.317326
+   hip_rotation_l: constraint violation = 0.0112421
+   knee_angle_l: constraint violation = -0.115907
+   ankle_angle_l: constraint violation = 27.847
+   subtalar_angle_l: constraint violation = -3.27928
+   mtp_angle_l: constraint violation = 53.3189
+   lumbar_extension: constraint violation = 0.556576
+   lumbar_bending: constraint violation = 0.68297
+   lumbar_rotation: constraint violation = 0.0496783
+
+
+time = 0.44 Performance =1.69825 Constraint violation = 125.758
+Printing results of investigation subject01_walk1 to Results_subject01_StaticOptimization_LapackError.

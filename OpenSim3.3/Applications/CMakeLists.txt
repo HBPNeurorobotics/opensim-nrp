@@ -1,0 +1,5 @@
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+	message(STATUS "Linker errors in debug mode - leave these out.")
+else()
+	SUBDIRS(Analyze Forward Scale IK ID CMC RRA versionUpdate) 
+endif()
