@@ -7,7 +7,12 @@
 #include <OpenSim/Simulation/Model/ComponentSet.h>
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
 
-OpenSimSimulation::OpenSimSimulation(const std::string& simulation_name, const std::string& scene_file): currentTime(0.0), timeStep(0.0), simulationName(simulation_name), sceneFile(scene_file), useVisualization(false)
+#include <simbody/internal/Constraint.h>
+#include <simbody/internal/Constraint_Ball.h>
+#include <simbody/internal/Constraint_Rod.h>
+#include <simbody/internal/Constraint_Weld.h>
+
+OpenSimSimulation::OpenSimSimulation(const std::string& simulation_name, const std::string& scene_file): currentTime(0.0), timeStep(0.0), simulationName(simulation_name), sceneFile(scene_file), useVisualization(true)
 {
   osimModel = NULL;
   osimManager = NULL;
@@ -23,6 +28,14 @@ OpenSimSimulation::~OpenSimSimulation()
 
 }
 
+void OpenSimSimulation::SetUseVisualization(bool val)
+{
+  if (val != useVisualization)
+  {
+    osimModel->setUseVisualizer(this->useVisualization);
+    useVisualization = val;
+  }
+}
 
 void OpenSimSimulation::Init()
 {
@@ -210,6 +223,7 @@ void OpenSimSimulation::Step()
       for (int k = 0; k < osimModel->getNumJoints(); ++k)
       {
         const OpenSim::Joint& jt = osimModel->getJointSet().get(k);
+
         /*const SimTK::ConstraintIndex ci(k);
         const SimTK::Constraint& ct = osimModel->getMatterSubsystem().getConstraint(ci);
 
@@ -236,9 +250,40 @@ void OpenSimSimulation::Step()
           const SimTK::ConstraintIndex& cci = coord.getClampedConstraintIndex();
           const SimTK::ConstraintIndex& pci = coord.getPrescribedConstraintIndex();
 
-          osimModel->getMatterSubsystem().getConstraint(lci);
-          osimModel->getMatterSubsystem().getConstraint(cci);
-          osimModel->getMatterSubsystem().getConstraint(pci);
+          std::cout << "   --> locked    : " << lci << ", isValid = " << lci.isValid() << std::endl;
+          std::cout << "   --> clamped   : " << cci << ", isValid = " << cci.isValid() << std::endl;
+          std::cout << "   --> prescribed: " << pci << ", isValid = " << pci.isValid() << std::endl;
+
+          try
+          {
+            SimTK::Vector_<SimTK::SpatialVec> bfg;
+            SimTK::Vector mf;
+            if (lci.isValid())
+            {
+              const SimTK::Constraint& lc = osimModel->getMatterSubsystem().getConstraint(lci);
+              lc.getConstraintForcesAsVectors(istate, bfg, mf);
+              std::cout << "    --> locked: bfg = " << bfg << "; mf = " << mf << std::endl;
+            }
+
+            if (cci.isValid())
+            {
+              const SimTK::Constraint& cc = osimModel->getMatterSubsystem().getConstraint(cci);
+              cc.getConstraintForcesAsVectors(istate, bfg, mf);
+              std::cout << "    --> clamped: bfg = " << bfg << "; mf = " << mf << std::endl;
+            }
+
+            if (pci.isValid())
+            {
+              const SimTK::Constraint& pc = osimModel->getMatterSubsystem().getConstraint(pci);
+              pc.getConstraintForcesAsVectors(istate, bfg, mf);
+              std::cout << "    --> prescribed: bfg = " << bfg << "; mf = " << mf << std::endl;
+            }
+          }
+          catch (SimTK::Exception::ErrorCheck& ex_err)
+          {
+            std::clog << "Fall-through exception for querying disabled Simbody Constraint instances: " << ex_err.what() << std::endl;
+          }
+
         }
       }
       //jointReactionAnalysis->step(istate,1);
@@ -246,6 +291,54 @@ void OpenSimSimulation::Step()
       std::cout << "new Q (pos): " << istate.getQ() << std::endl;
       std::cout << "new U (vel): " << istate.getU() << std::endl;
       std::cout << "new Z (aux): " << istate.getZ() << std::endl;
+
+      osimModel->getMultibodySystem().realize(ws);
+      int numMobilizedBodies = osimModel->getMatterSubsystem().getNumMobilities();
+
+      std::cout << "=== MobilizedBodies: " << numMobilizedBodies << " ===" << std::endl;
+      for (int k = 0; k < numMobilizedBodies; ++k)
+      {
+        try
+        {
+          //const SimTK::State& dfs = osimManager->getIntegrator().getAdvancedState();
+          SimTK::MobodIndex mbi(k);
+          if (mbi.isValid())
+          {
+            const SimTK::MobilizedBody& mb = osimModel->getMatterSubsystem().getMobilizedBody(mbi);
+            const SimTK::SpatialVec& bta = mb.getBodyAcceleration(ws);
+            const SimTK::SpatialVec& btv = mb.getBodyVelocity(ws);
+            const SimTK::Vec3& baa = mb.getBodyAngularAcceleration(ws);
+            const SimTK::Vec3& bav = mb.getBodyAngularVelocity(ws);
+
+            std::cout << " - " << k << ": " << std::endl;
+            std::cout << "  --> : translational velocity = " << btv << "; translational acceleration = " << bta << std::endl;
+            std::cout << "  --> : angular velocity: " << bav << "; angular acceleration: " << baa << std::endl;
+          }
+        }
+        catch (SimTK::Exception::CacheEntryOutOfDate& ex)
+        {
+          std::clog << "Fallthrough exception querying MobilizedBody properties: " << ex.what() << std::endl;
+        }
+        catch (SimTK::Exception::StageTooLow& ex)
+        {
+          std::clog << "Fallthrough exception querying MobilizedBody properties: " << ex.what() << std::endl;
+        }
+      }
+
+
+      try
+      {
+        const SimTK::Vector_<SimTK::SpatialVec>& rbForces = osimModel->getMultibodySystem().getRigidBodyForces(istate, istate.getSystemStage());
+        std::cout << "=== Rigid body forces: " << rbForces.size() << " ===" << std::endl;
+        for (int k = 0; k < rbForces.size(); ++k)
+        {
+          std::cout << " - " << k << ": " << rbForces[k] << std::endl;
+        }
+      }
+      catch (SimTK::Exception::StageOutOfRange& ex)
+      {
+        std::clog << "Fallthrough exception retrieving Simbody RigidBody forces: " << ex.what() << std::endl;
+      }
 
       const SimTK::GeneralContactSubsystem& contactSystem = osimModel->getMultibodySystem().getContactSubsystem();
       int contactSetsCount = contactSystem.getNumContactSets();
@@ -278,6 +371,12 @@ void OpenSimSimulation::Step()
           {
             std::cout << "     -> EllipticalPointContact." << std::endl;
             const SimTK::EllipticalPointContact& c = static_cast<const SimTK::EllipticalPointContact&>(contact);
+            std::cout << "        " << c << std::endl;
+          }
+          else if (SimTK::TriangleMeshContact::isInstance(contact))
+          {
+            std::cout << "     -> TriangleMeshContact." << std::endl;
+            const SimTK::TriangleMeshContact& c = static_cast<const SimTK::TriangleMeshContact&>(contact);
             std::cout << "        " << c << std::endl;
           }
         }

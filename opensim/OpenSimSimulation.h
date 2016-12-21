@@ -29,10 +29,7 @@ class OpenSimSimulation
             return currentTime;
         }
 
-        void SetUseVisualization(bool val)
-        {
-          useVisualization = val;
-        }
+        void SetUseVisualization(bool val);
 
         bool GetUseVisualization() const
         {

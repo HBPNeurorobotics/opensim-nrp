@@ -50,17 +50,23 @@ int main(int argc, char** argv)
     std::cout << "Scene file to load: " << vm["scene_file"].as<std::string>() << std::endl;
     std::cout << "Iterations to simulate: " << sim_iterations << std::endl;
     std::cout << "Timestep: " << sim_timestep << std::endl;
+    std::cout << "Use visualization: " << use_visualization << std::endl;
 
     OpenSimSimulation* simulation = new OpenSimSimulation("OpenSim", vm["scene_file"].as<std::string>());
-
-    simulation->Init();
 
     simulation->SetTimeStep(sim_timestep);
     simulation->SetUseVisualization(use_visualization);
 
+    simulation->Init();
+
+    int milliseconds = 1000;
     for (unsigned int k = 0; k < sim_iterations; ++k)
     {
       simulation->Step();
+      struct timespec ts;
+      ts.tv_sec = milliseconds / 1000;
+      ts.tv_nsec = (milliseconds % 1000) * 1000000;
+      nanosleep(&ts, NULL);
     }
 
     simulation->Fini();
