@@ -246,9 +246,9 @@ void OpenSimSimulation::Step()
         {
           const OpenSim::Coordinate& coord = ocs.get(n);
 
-          const SimTK::ConstraintIndex& lci = coord.getLockedConstraintIndex();
-          const SimTK::ConstraintIndex& cci = coord.getClampedConstraintIndex();
-          const SimTK::ConstraintIndex& pci = coord.getPrescribedConstraintIndex();
+          const SimTK::ConstraintIndex& lci = coord.getLockedConstraintIndex(); 
+          const SimTK::ConstraintIndex& cci = coord.getClampedConstraintIndex(); 
+          const SimTK::ConstraintIndex& pci = coord.getPrescribedConstraintIndex(); 
 
           std::cout << "   --> locked    : " << lci << ", isValid = " << lci.isValid() << std::endl;
           std::cout << "   --> clamped   : " << cci << ", isValid = " << cci.isValid() << std::endl;
@@ -283,14 +283,13 @@ void OpenSimSimulation::Step()
           {
             std::clog << "Fall-through exception for querying disabled Simbody Constraint instances: " << ex_err.what() << std::endl;
           }
-
         }
       }
       //jointReactionAnalysis->step(istate,1);
 
-      std::cout << "new Q (pos): " << istate.getQ() << std::endl;
+      /* std::cout << "new Q (pos): " << istate.getQ() << std::endl;
       std::cout << "new U (vel): " << istate.getU() << std::endl;
-      std::cout << "new Z (aux): " << istate.getZ() << std::endl;
+      std::cout << "new Z (aux): " << istate.getZ() << std::endl; */
 
       osimModel->getMultibodySystem().realize(ws);
       int numMobilizedBodies = osimModel->getMatterSubsystem().getNumMobilities();
