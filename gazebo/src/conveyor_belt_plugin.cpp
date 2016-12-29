@@ -154,8 +154,13 @@ void ConveyorBeltPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
         {
           // gzdbg << "   Log file stream open, writing." << "\n";
           physics::JointWrench wrench = joint->GetForceTorque(0);
+#ifdef CONVEYOR_BELT_PLUGIN_GAZEBO_8_SUPPORT
           log_stream << this->world->SimTime().Double() << " " << wrench.body1Force.GetLength() << " " << wrench.body2Force.GetLength()
                      << " " << wrench.body1Torque.GetLength() << " " << wrench.body2Torque.GetLength() << "\n";
+#else // CONVEYOR_BELT_PLUGIN_GAZEBO_8_SUPPORT
+          log_stream << this->world->GetSimTime().Double() << " " << wrench.body1Force.GetLength() << " " << wrench.body2Force.GetLength()
+                     << " " << wrench.body1Torque.GetLength() << " " << wrench.body2Torque.GetLength() << "\n";
+#endif // CONVEYOR_BELT_PLUGIN_GAZEBO_8_SUPPORT
           log_stream.close();
         }
       }
@@ -168,8 +173,13 @@ void ConveyorBeltPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
         {
           // gzdbg << "   Log file stream open, writing." << "\n";
           physics::JointWrench wrench = joint->GetForceTorque(0);
+#ifdef CONVEYOR_BELT_PLUGIN_GAZEBO_8_SUPPORT
           log_stream << this->world->SimTime().Double() << " " << wrench.body1Force.GetLength() << " " << wrench.body2Force.GetLength()
                      << " " << wrench.body1Torque.GetLength() << " " << wrench.body2Torque.GetLength() << "\n";
+#else // CONVEYOR_BELT_PLUGIN_GAZEBO_8_SUPPORT
+          log_stream << this->world->GetSimTime().Double() << " " << wrench.body1Force.GetLength() << " " << wrench.body2Force.GetLength()
+                     << " " << wrench.body1Torque.GetLength() << " " << wrench.body2Torque.GetLength() << "\n";
+#endif // CONVEYOR_BELT_PLUGIN_GAZEBO_8_SUPPORT
           log_stream.close();
         }
       }

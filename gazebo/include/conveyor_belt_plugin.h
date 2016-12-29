@@ -34,6 +34,10 @@
 
 #include <iostream>
 
+#if GAZEBO_MAJOR_VERSION >= 8 && GAZEBO_MINOR_VERSION > 0
+#define CONVEYOR_BELT_PLUGIN_GAZEBO_8_SUPPORT
+#endif
+
 namespace gazebo
 {
   /// \brief A plugin for a conveyor belt.

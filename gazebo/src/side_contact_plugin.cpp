@@ -327,7 +327,11 @@ void SideContactPlugin::LogContactData()
               ignition::math::Vector3d b2_f = gazebo::msgs::ConvertIgn(b2_w.force());
               ignition::math::Vector3d b2_t = gazebo::msgs::ConvertIgn(b2_w.torque());
 
+#ifdef SIDE_CONTACT_PLUGIN_GAZEBO_8_SUPPORT
               log_stream << this->world->SimTime().Double() << " " << ct_data.depth(l) << " " << b1_f.Length() << " " << b2_f.Length() << " " << b1_t.Length() << " " << b2_t.Length() << "\n";
+#else // SIDE_CONTACT_PLUGIN_GAZEBO_8_SUPPORT
+              log_stream << this->world->GetSimTime().Double() << " " << ct_data.depth(l) << " " << b1_f.Length() << " " << b2_f.Length() << " " << b1_t.Length() << " " << b2_t.Length() << "\n";
+#endif // SIDE_CONTACT_PLUGIN_GAZEBO_8_SUPPORT
               // log_stream << this->world->SimTime().Double() << " " << b1_f.Length() << " " << b2_f.Length() << " " << b1_t.Length() << " " << b2_t.Length() << "\n";
 
               log_stream.close();

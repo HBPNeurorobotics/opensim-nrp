@@ -142,9 +142,14 @@ find_path(Simbody_INCLUDE_DIR
     PATH_SUFFIXES "include" "SimTK/include" "simtk/include"
                   "Simbody/include" "simbody/include"
     DOC "Location of top-level installed Simbody header files"
-)
+    )
 
 get_filename_component(Simbody_ROOT_DIR_TEMP "${Simbody_INCLUDE_DIR}" PATH)
+# tst Anfang
+if (SimTK_INSTALL_DIR)
+    set(Simbody_ROOT_DIR_TEMP "${SimTK_INSTALL_DIR}")
+endif()  
+# tst Ende
 set(Simbody_ROOT_DIR "${Simbody_ROOT_DIR_TEMP}" CACHE PATH
     "Where we found Simbody; use SimTK_INSTALL_DIR to change." FORCE)
 

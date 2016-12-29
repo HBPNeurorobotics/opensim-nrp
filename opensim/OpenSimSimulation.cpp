@@ -12,7 +12,14 @@
 #include <simbody/internal/Constraint_Rod.h>
 #include <simbody/internal/Constraint_Weld.h>
 
-OpenSimSimulation::OpenSimSimulation(const std::string& simulation_name, const std::string& scene_file): currentTime(0.0), timeStep(0.0), simulationName(simulation_name), sceneFile(scene_file), useVisualization(true)
+#include <string>
+
+OpenSimSimulation::OpenSimSimulation(const std::string& simulation_name, const std::string& scene_file, const std::string& logDir/* ="" */): 
+	  currentTime(0.0)
+	, timeStep(0.0)
+	, simulationName(simulation_name)
+	, sceneFile(scene_file)
+	, useVisualization(false)
 {
   osimModel = NULL;
   osimManager = NULL;
@@ -21,11 +28,19 @@ OpenSimSimulation::OpenSimSimulation(const std::string& simulation_name, const s
 
   ///
   jointReactionAnalysis = NULL;
+  
+  if (!logDir.empty())
+  {
+	logger = new SimulationLogger(logDir);
+  }
 }
 
 OpenSimSimulation::~OpenSimSimulation()
 {
-
+	if (logger)
+	{
+		delete logger;
+	}
 }
 
 void OpenSimSimulation::SetUseVisualization(bool val)
@@ -129,6 +144,142 @@ void OpenSimSimulation::Init()
       osimModel->addAnalysis(jointReactionAnalysis);
 
       //jointReactionAnalysis->begin(isi);
+	  
+	  if (logger)
+	  {
+		///////////////////////
+		// Pos/Vel/Aux logs
+		
+		// pos/vel
+		unsigned int posVelSize = isi.getQ().size();
+		std::string logWarning = "";
+		if (isi.getQ().size() != isi.getU().size())
+		{
+			logWarning = "WARNING, size of Q (position) and U (velocities) vectors are not the same, which should not happen. Mistakes in logging could have happened.";
+			std::cout << logWarning << std::endl;
+			posVelSize = std::min( isi.getQ().size(), isi.getU().size() );
+		}
+		for (unsigned int u=0; u < posVelSize; u++)
+		{
+			std::string posvel_id;
+			{
+				std::stringstream tmpStr;
+				tmpStr << "PosVel_" << u;
+				posvel_id = tmpStr.str();
+				
+				tmpStr.str("");
+				tmpStr << u;
+		
+				logger->newLogger(posvel_id, "position_and_velocity_" + tmpStr.str(),
+					"# OpenSim/Simbody dynamics data log file\n# logged data from the Q (position) and U (velocities) vectors, entries number "+tmpStr.str()+" "+logWarning+"\n# data columns in this file:\n# time - position - velocity \n");
+				
+			}
+		}
+		
+		// aux
+		if (isi.getZ().size() > 0) // there are not always auxiliary variables in a system
+		{
+			std::stringstream tmpStr;
+			for (unsigned int u=0; u < isi.getZ().size(); u++)
+			{
+				  tmpStr << "- auxiliary " << u;
+			}
+		
+			logger->newLogger("Aux", "auxiliaries",
+				"# OpenSim/Simbody dynamics data log file\n# logged data from the Z (auxiliary) vector\n# data columns in this file:\n# time "+tmpStr.str()+" \n");
+		}
+		///////////////////////
+		// Mobod log
+		
+		//osimModel->getMultibodySystem().realize(isi);
+		int numMobilizedBodies = osimModel->getMatterSubsystem().getNumMobilities();
+
+		for (int k = 0; k < numMobilizedBodies; ++k)
+		{
+			try
+			{
+				SimTK::MobodIndex mbi(k);
+				if (mbi.isValid())
+				{
+					std::string mobod_id;
+					{
+					  std::stringstream tmpStr;
+					  tmpStr << "Mobod_" << k;
+					  mobod_id = tmpStr.str();
+					}
+				
+					logger->newLogger(mobod_id, "velocities_and_accelerations_" + mobod_id,
+					  "# OpenSim/Simbody dynamics data log file\n# logged data from "+mobod_id+"\n# data columns in this file:\n# time - angular velocity - translational velocity - angular acceleration - translational acceleration \n");
+				}
+			}
+			catch (SimTK::Exception::CacheEntryOutOfDate& ex)
+			{
+			  std::clog << "Fallthrough exception querying MobilizedBody properties: " << ex.what() << std::endl;
+			}
+			catch (SimTK::Exception::StageTooLow& ex)
+			{
+			  std::clog << "Fallthrough exception querying MobilizedBody properties: " << ex.what() << std::endl;
+			}
+		}
+		
+		///////////////////////
+		// rigid forces log
+		try
+		{
+			const SimTK::Vector_<SimTK::SpatialVec>& rbForces = osimModel->getMultibodySystem().getRigidBodyForces(isi, isi.getSystemStage());
+			for (int k = 0; k < rbForces.size(); ++k)
+			{
+				std::string rigidForce_id;
+				{
+					std::stringstream tmpStr;
+					tmpStr << "RigidForce_" << k;
+					rigidForce_id = tmpStr.str();
+					
+					tmpStr.str("");
+					tmpStr << k;
+				
+					logger->newLogger(rigidForce_id, "rigid_body_forces_" + tmpStr.str(),
+					  "# OpenSim/Simbody dynamics data log file\n# logged data from rigid force vector "+tmpStr.str()+"\n# data columns in this file:\n# time - torque - force \n");
+				}
+				
+				//std::cout << " - " << k << ": " << rbForces[k] << std::endl;
+			}
+		}
+		catch (SimTK::Exception::StageOutOfRange& ex)
+		{
+			std::clog << "Fallthrough exception retrieving Simbody RigidBody forces: " << ex.what() << std::endl;
+		}
+		
+		///////////////////////
+		// force set log
+		const OpenSim::ForceSet& forces = osimModel->getForceSet();
+		for (int u = 0; u < forces.getSize(); u++)
+		{
+			OpenSim::Force *force = &(forces[u]);
+			OpenSim::Array<std::string> fLabels = force->getRecordLabels();
+
+			std::string forceName = force->getName(); // this is the 'name' attribute of the force element in the .osim file
+			if (force->getName().empty())
+			{
+				forceName = "unnamed force (set the 'name' attribute of the force in the .osim file)";
+			}
+			
+			std::stringstream tmpStr;
+			tmpStr << "Force_" << u;
+			std::string force_id = tmpStr.str();
+			
+			tmpStr.str("");
+			
+			for (int m = 0; m < fLabels.size(); ++m)
+			{
+			  tmpStr << " - " << fLabels[m];
+			}
+			
+			logger->newLogger(force_id, "force_set_" + force_id,
+			  "# OpenSim/Simbody dynamics data log file\n# logged data from force named "+forceName+"\n# data columns in this file:\n# time"+tmpStr.str()+"\n");
+		}
+	  }
+	  
     }
   }
 }
@@ -198,9 +349,11 @@ void OpenSimSimulation::Step()
     SimTK::State& ws = osimModel->updWorkingState();
     
     //std::cout << "State: " << ws.toString() << std::endl;
-    std::cout << "current Q (pos): " << ws.getQ() << std::endl;
+	
+	// current positions are currently not logged, right now
+    /* std::cout << "current Q (pos): " << ws.getQ() << std::endl;
     std::cout << "current U (vel): " << ws.getU() << std::endl;
-    std::cout << "current Z (aux): " << ws.getZ() << std::endl;
+    std::cout << "current Z (aux): " << ws.getZ() << std::endl; */
     
 
     bool status = osimManager->doIntegration(ws, 1, timeStep);
@@ -210,9 +363,27 @@ void OpenSimSimulation::Step()
 
       std::cout << "Stage after integration: " << istate.getSystemStage().getName() << std::endl;
 
-      std::cout << "new Q (pos): " << istate.getQ() << std::endl;
+      /* std::cout << "new Q (pos): " << istate.getQ() << std::endl;
       std::cout << "new U (vel): " << istate.getU() << std::endl;
-      std::cout << "new Z (aux): " << istate.getZ() << std::endl;
+      std::cout << "new Z (aux): " << istate.getZ() << std::endl; */
+	  unsigned int posVelSize = std::min( istate.getQ().size(), istate.getU().size() ); // just in case, those should always be the same, unless there is an object that has a position but no velocity
+	  for (unsigned int u=0; u < posVelSize; u++)
+	  {
+		  std::string posvel_id;
+		  {
+			  std::stringstream tmpStr;
+			  tmpStr << "PosVel_" << u;
+			  posvel_id = tmpStr.str();
+			  
+			  tmpStr.str("");
+			  
+			  tmpStr  << currentTime + timeStep
+					<< " " << istate.getQ()[u] << " " << istate.getU()[u]
+					<< "\n";
+			  
+			  logger->logData(posvel_id,tmpStr.str());
+		  }
+	  }
 
       /*int jt_ct = osimModel->getMatterSubsystem().getNumConstraints();
       for (int k = 0; k < jt_ct; ++k)
@@ -301,17 +472,38 @@ void OpenSimSimulation::Step()
         {
           //const SimTK::State& dfs = osimManager->getIntegrator().getAdvancedState();
           SimTK::MobodIndex mbi(k);
+		  
           if (mbi.isValid())
           {
+
             const SimTK::MobilizedBody& mb = osimModel->getMatterSubsystem().getMobilizedBody(mbi);
             const SimTK::SpatialVec& bta = mb.getBodyAcceleration(ws);
             const SimTK::SpatialVec& btv = mb.getBodyVelocity(ws);
-            const SimTK::Vec3& baa = mb.getBodyAngularAcceleration(ws);
-            const SimTK::Vec3& bav = mb.getBodyAngularVelocity(ws);
-
-            std::cout << " - " << k << ": " << std::endl;
-            std::cout << "  --> : translational velocity = " << btv << "; translational acceleration = " << bta << std::endl;
-            std::cout << "  --> : angular velocity: " << bav << "; angular acceleration: " << baa << std::endl;
+            // const SimTK::Vec3& baa = mb.getBodyAngularAcceleration(ws);
+			// const SimTK::Vec3& bav = mb.getBodyAngularVelocity(ws);
+			
+			/*std::cout << " - " << k << ": " << std::endl;
+            std::cout << "  --> : translational velocity = " << btv[1] << "; translational acceleration = " << bta[1] << std::endl;
+            //std::cout << "  --> : angular velocity: " << bav << "; angular acceleration: " << baa << std::endl;			
+            std::cout << "  --> : angular velocity: " << btv[0] << "; angular acceleration: " << btv[1] << std::endl;*/
+			
+			std::string mobod_id;
+			{
+			  std::stringstream tmpStr;
+			  tmpStr << "Mobod_" << k;
+			  mobod_id = tmpStr.str();
+			  
+			  tmpStr.str("");
+			  
+			  tmpStr  << currentTime + timeStep
+					<< " " << btv[0][0] << " " << btv[0][1] << " " << btv[0][2]
+					<< " " << btv[1][0] << " " << btv[1][1] << " " << btv[1][2]
+					<< " " << bta[0][0] << " " << bta[0][1] << " " << bta[0][2]
+					<< " " << bta[1][0] << " " << bta[1][1] << " " << bta[1][2]
+					<< "\n";
+			  
+			  logger->logData(mobod_id,tmpStr.str());
+			}
           }
         }
         catch (SimTK::Exception::CacheEntryOutOfDate& ex)
@@ -324,14 +516,28 @@ void OpenSimSimulation::Step()
         }
       }
 
-
       try
       {
         const SimTK::Vector_<SimTK::SpatialVec>& rbForces = osimModel->getMultibodySystem().getRigidBodyForces(istate, istate.getSystemStage());
         std::cout << "=== Rigid body forces: " << rbForces.size() << " ===" << std::endl;
         for (int k = 0; k < rbForces.size(); ++k)
         {
-          std::cout << " - " << k << ": " << rbForces[k] << std::endl;
+          //std::cout << " - " << k << ": " << rbForces[k] << std::endl;
+		  std::string rigidForce_id;
+		  {
+			  std::stringstream tmpStr;
+			  tmpStr << "RigidForce_" << k;
+			  rigidForce_id = tmpStr.str();
+			  
+			  tmpStr.str("");
+			  
+			  tmpStr  << currentTime + timeStep
+					<< " " << rbForces[k][0][0] << " " << rbForces[k][0][1] << " " << rbForces[k][0][2]
+					<< " " << rbForces[k][1][0] << " " << rbForces[k][1][1] << " " << rbForces[k][1][2]
+					<< "\n";
+			  
+			  logger->logData(rigidForce_id,tmpStr.str());
+		  }
         }
       }
       catch (SimTK::Exception::StageOutOfRange& ex)
@@ -447,8 +653,29 @@ void OpenSimSimulation::Step()
         OpenSim::Array<double> fValues = force->getRecordValues(istate);
         OpenSim::Array<std::string> fLabels = force->getRecordLabels();
 
-        for (int m = 0; m < fLabels.size(); ++m)
-          std::cout << fLabels[m] << " = " << fValues[m] << ";";
+        /* for (int m = 0; m < fLabels.size(); ++m)
+		{
+          //std::cout << fLabels[m] << " = " << fValues[m] << ";";
+          std::cout << fLabels[m] << " = " << fValues[m] << "\n";
+		} */
+		
+		std::string force_id;
+		{
+			std::stringstream tmpStr;
+			tmpStr << "Force_" << u;
+			force_id = tmpStr.str();
+			
+			tmpStr.str("");
+			
+			tmpStr  << currentTime;
+			for (int m = 0; m < fValues.size(); ++m)
+			{
+				tmpStr << " " << fValues[m];
+			}
+			tmpStr << "\n";
+			
+			logger->logData(force_id,tmpStr.str());
+		}
 
         std::cout << std::endl;
         SimTK::ForceIndex force_idx = force->getForceIndex();

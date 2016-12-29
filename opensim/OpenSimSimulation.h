@@ -2,11 +2,13 @@
 #define OPENSIM_SIMULATION_H
 
 #include <OpenSim/OpenSim.h>
+#include "SimulationLogger.h"
 
 class OpenSimSimulation
 {   
     public:
-        OpenSimSimulation(const std::string& simulation_name, const std::string& scene_file);
+        //OpenSimSimulation(const std::string& simulation_name, const std::string& scene_file);
+        OpenSimSimulation(const std::string& simulation_name, const std::string& scene_file, const std::string& logDir="");
         ~OpenSimSimulation();
         
         void Init();
@@ -54,6 +56,9 @@ class OpenSimSimulation
       OpenSim::JointReaction *jointReactionAnalysis;
 
       bool useVisualization;
+	  
+	  protected: 
+		SimulationLogger* logger;
 };
 
 #endif //OPENSIM_SIMULATION_H

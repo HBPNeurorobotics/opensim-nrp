@@ -32,6 +32,10 @@
 #include <ros/ros.h>
 #include <std_msgs/Bool.h>
 
+#if GAZEBO_MAJOR_VERSION >= 8 && GAZEBO_MINOR_VERSION > 0
+#define SIDE_CONTACT_PLUGIN_GAZEBO_8_SUPPORT
+#endif
+
 namespace gazebo
 {
   /// \brief A plugin for a model with a contact sensor that only monitors

@@ -52,7 +52,7 @@ int main(int argc, char** argv)
     std::cout << "Timestep: " << sim_timestep << std::endl;
     std::cout << "Use visualization: " << use_visualization << std::endl;
 
-    OpenSimSimulation* simulation = new OpenSimSimulation("OpenSim", vm["scene_file"].as<std::string>());
+    OpenSimSimulation* simulation = new OpenSimSimulation("OpenSim", vm["scene_file"].as<std::string>(), "/tmp/");
 
     simulation->SetTimeStep(sim_timestep);
     simulation->SetUseVisualization(use_visualization);
