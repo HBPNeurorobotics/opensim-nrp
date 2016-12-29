@@ -384,6 +384,17 @@ void OpenSimSimulation::Step()
 			  logger->logData(posvel_id,tmpStr.str());
 		  }
 	  }
+	  
+	  {
+			std::stringstream tmpStr;
+			tmpStr  << currentTime + timeStep;
+			for (unsigned int u=0; u < istate.getZ().size(); u++)
+			{
+				tmpStr  << " " << istate.getZ()[u];
+			}
+			tmpStr << "\n";
+			logger->logData("Aux",tmpStr.str());
+	  }
 
       /*int jt_ct = osimModel->getMatterSubsystem().getNumConstraints();
       for (int k = 0; k < jt_ct; ++k)
