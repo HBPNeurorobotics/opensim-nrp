@@ -30,9 +30,11 @@ endif()
 find_package(Boost COMPONENTS program_options filesystem REQUIRED)
 
 set(benchmark_SRCS  main.cpp
-                    OpenSimSimulation.cpp)
+                    OpenSimSimulation.cpp
+					SimulationLogger.cpp)
 
-set(benchmark_HEADERS OpenSimSimulation.h)
+set(benchmark_HEADERS OpenSimSimulation.h
+					  SimulationLogger.h)
 
 include_directories(${Boost_INCLUDE_DIR})
                     
