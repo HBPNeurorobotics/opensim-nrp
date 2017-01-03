@@ -59,6 +59,23 @@ class OpenSimSimulation
 	  
 	  protected: 
 		SimulationLogger* logger;
+		
+		class ElasticFoundationForce_Parameters {
+			public:
+				SimTK::Array_<SimTK::Vec3> springPosition;
+				SimTK::Array_<SimTK::UnitVec3> springNormal;
+				SimTK::Array_<SimTK::Real> springArea;
+		};
+	
+		void calcContactInfo(const SimTK::State& state, 
+			SimTK::ContactSurfaceIndex meshIndex, SimTK::ContactSurfaceIndex otherBodyIndex, 
+			const ElasticFoundationForce_Parameters& param, const std::set<int>& insideFaces,
+			/*Real areaScale, Vector_<SpatialVec>& bodyForces, Real& pe,*/
+			SimTK::GeneralContactSubsystem subsystem,
+			SimTK::ContactSetIndex set) const;
+
+		std::map<SimTK::ContactSurfaceIndex, OpenSimSimulation::ElasticFoundationForce_Parameters>  parameters;
 };
+
 
 #endif //OPENSIM_SIMULATION_H

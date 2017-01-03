@@ -12,6 +12,10 @@
 #include <simbody/internal/Constraint_Rod.h>
 #include <simbody/internal/Constraint_Weld.h>
 
+// tst Anfang
+#include <SimTKcommon/internal/ExceptionMacros.h>
+// tst Ende
+
 #include <string>
 
 OpenSimSimulation::OpenSimSimulation(const std::string& simulation_name, const std::string& scene_file, const std::string& logDir/* ="" */): 
@@ -88,6 +92,8 @@ void OpenSimSimulation::Init()
       this->si = osimModel->initializeState();
 
       contactTracker = new SimTK::ContactTrackerSubsystem(osimModel->updMultibodySystem());
+	  
+	  std::cout << "-- initialized contact tracker subsystem - this tracker subsystem manages " << contactTracker->getNumSurfaces() << " surfaces --" << std::endl;
 
       reporter = new OpenSim::ForceReporter(osimModel);
       osimModel->addAnalysis(reporter);
@@ -95,8 +101,8 @@ void OpenSimSimulation::Init()
       integrator = new SimTK::RungeKuttaMersonIntegrator(osimModel->getMultibodySystem());
       integrator->setAccuracy(1.0e-6);
 
-      osimManager = new OpenSim::Manager(*osimModel);
-
+      osimManager = new OpenSim::Manager(*osimModel); 
+	  
       //////////////
       const OpenSim::JointSet& joints = osimModel->getJointSet();
       int numJoints = osimModel->getNumJoints();
@@ -278,7 +284,76 @@ void OpenSimSimulation::Init()
 			logger->newLogger(force_id, "force_set_" + force_id,
 			  "# OpenSim/Simbody dynamics data log file\n# logged data from force named "+forceName+"\n# data columns in this file:\n# time"+tmpStr.str()+"\n");
 		}
-	  }
+		
+		
+	  
+		  //////////////
+		  
+		  if (osimModel->getMultibodySystem().hasContactSubsystem())
+		  {
+			const SimTK::GeneralContactSubsystem &contactSubsystem = osimModel->getMultibodySystem().getContactSubsystem();
+			std::cout << "-- Found GeneralContactSubsystem containing " << contactSubsystem.getNumContactSets() << " contact sets --" << std::endl;
+
+			for (int k = 0; k < contactSubsystem.getNumContactSets(); ++k)
+			{
+				SimTK::ContactSetIndex contactSetInd(k);
+				if (contactSetInd.isValid())
+				{
+					std::cout << "   Contact set "<< k << " contains " << contactSubsystem.getNumBodies(contactSetInd) << " bodies, with transforms:   " << std::endl;
+					for (int m = 0; m < contactSubsystem.getNumBodies(contactSetInd); ++m)
+					{
+						SimTK::ContactSurfaceIndex contactSurfaceInd(m);
+						if (contactSurfaceInd.isValid())
+						{
+							std::cout << m << ": "<< contactSubsystem.getBody(contactSetInd, contactSurfaceInd).getBodyTransform(isi) << std::endl;
+							
+							if (logger)
+							{
+								// fill ElasticFoundationForce_Parameters set with data (for contact point info calculation)
+								SimTK::ContactSurfaceIndex bodyIndex = contactSurfaceInd;
+								SimTK::GeneralContactSubsystem subsystem = contactSubsystem;
+								SimTK::ContactSetIndex set=contactSetInd;
+								
+								if (subsystem.getBodyGeometry(set, bodyIndex).getTypeId() == SimTK::ContactGeometry::TriangleMesh::classTypeId())
+								{
+									SimTK_APIARGCHECK1(bodyIndex >= 0 && bodyIndex < subsystem.getNumBodies(set), "\"not actually a Simbody API method, but OpenSimSimulation\"", "Init",
+											"Illegal body index: %d", (int)bodyIndex);
+									SimTK_APIARGCHECK1(subsystem.getBodyGeometry(set, bodyIndex).getTypeId() 
+														== SimTK::ContactGeometry::TriangleMesh::classTypeId(), 
+										"\"not actually a Simbody API method, but OpenSimSimulation\"", "Init",
+										"Body %d is not a triangle mesh", (int)bodyIndex);
+									
+									parameters[bodyIndex] = ElasticFoundationForce_Parameters();
+									const SimTK::ContactGeometry::TriangleMesh& mesh = 
+										SimTK::ContactGeometry::TriangleMesh::getAs
+												(subsystem.getBodyGeometry(set, bodyIndex));
+									ElasticFoundationForce_Parameters& param = parameters[bodyIndex];
+									param.springPosition.resize(mesh.getNumFaces());
+									param.springNormal.resize(mesh.getNumFaces());
+									param.springArea.resize(mesh.getNumFaces());
+									SimTK::Vec2 uv(SimTK::Real(1./3.), SimTK::Real(1./3.));
+									for (int i = 0; i < (int) param.springPosition.size(); i++) 
+									{
+										param.springPosition[i] = 
+										   (mesh.getVertexPosition(mesh.getFaceVertex(i, 0))
+											+mesh.getVertexPosition(mesh.getFaceVertex(i, 1))
+											+mesh.getVertexPosition(mesh.getFaceVertex(i, 2)))/3;
+										param.springNormal[i] = -mesh.findNormalAtPoint(i, uv);
+										param.springArea[i] = mesh.getFaceArea(i);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		  }
+		  else
+		  {
+			  std::cout << "-- MultibodySystem contains no GeneralContactSubsystem --" << std::endl;
+		  }
+
+	  } // if(logger)
 	  
     }
   }
@@ -366,7 +441,7 @@ void OpenSimSimulation::Step()
       /* std::cout << "new Q (pos): " << istate.getQ() << std::endl;
       std::cout << "new U (vel): " << istate.getU() << std::endl;
       std::cout << "new Z (aux): " << istate.getZ() << std::endl; */
-	  unsigned int posVelSize = std::min( istate.getQ().size(), istate.getU().size() ); // just in case, those should always be the same, unless there is an object that has a position but no velocity
+	  unsigned int posVelSize = std::min( istate.getQ().size(), istate.getU().size() ); // just in case, those should always be the same, unless there is an object that has a position but no velocity or vice versa
 	  for (unsigned int u=0; u < posVelSize; u++)
 	  {
 		  std::string posvel_id;
@@ -474,7 +549,8 @@ void OpenSimSimulation::Step()
       std::cout << "new Z (aux): " << istate.getZ() << std::endl; */
 
       osimModel->getMultibodySystem().realize(ws);
-      int numMobilizedBodies = osimModel->getMatterSubsystem().getNumMobilities();
+      //int numMobilizedBodies = osimModel->getMatterSubsystem().getNumMobilities();
+      int numMobilizedBodies = osimModel->getMatterSubsystem().getNumBodies();
 
       std::cout << "=== MobilizedBodies: " << numMobilizedBodies << " ===" << std::endl;
       for (int k = 0; k < numMobilizedBodies; ++k)
@@ -493,10 +569,10 @@ void OpenSimSimulation::Step()
             // const SimTK::Vec3& baa = mb.getBodyAngularAcceleration(ws);
 			// const SimTK::Vec3& bav = mb.getBodyAngularVelocity(ws);
 			
-			/*std::cout << " - " << k << ": " << std::endl;
+			/* std::cout << " - " << k << ": " << std::endl;
             std::cout << "  --> : translational velocity = " << btv[1] << "; translational acceleration = " << bta[1] << std::endl;
             //std::cout << "  --> : angular velocity: " << bav << "; angular acceleration: " << baa << std::endl;			
-            std::cout << "  --> : angular velocity: " << btv[0] << "; angular acceleration: " << btv[1] << std::endl;*/
+            std::cout << "  --> : angular velocity: " << btv[0] << "; angular acceleration: " << btv[1] << std::endl; */
 			
 			std::string mobod_id;
 			{
@@ -592,8 +668,63 @@ void OpenSimSimulation::Step()
           else if (SimTK::TriangleMeshContact::isInstance(contact))
           {
             std::cout << "     -> TriangleMeshContact." << std::endl;
-            const SimTK::TriangleMeshContact& c = static_cast<const SimTK::TriangleMeshContact&>(contact);
+            /* const SimTK::TriangleMeshContact& c = static_cast<const SimTK::TriangleMeshContact&>(contact); */
+            const SimTK::TriangleMeshContact& c = SimTK::TriangleMeshContact::getAs(contact);
             std::cout << "        " << c << std::endl;
+			
+			//
+            std::cout << "--- condition: " << SimTK::Contact::nameOfCondition (c.getCondition()) << std::endl;
+            std::cout << "--- transform: " << c.getTransform() << std::endl;
+			const std::set< int > &faces1 = c.getSurface1Faces();
+			const std::set< int > &faces2 = c.getSurface2Faces();
+			
+			std::cout << "---   faces 1: ";
+			for (std::set<int>::iterator it=faces1.begin(); it!=faces1.end(); ++it)
+			{
+				std::cout << ' ' << *it;
+			}
+			std::cout << std::endl;
+			
+			std::cout << "---   faces 2: ";
+			for (std::set<int>::iterator it=faces2.begin(); it!=faces2.end(); ++it)
+			{
+				std::cout << ' ' << *it;
+			}
+			std::cout << std::endl;
+			
+			// tst Anfang
+			if(logger)
+			{
+			// Aufruf von processContact in Simbody\src\ElasticFoundationForce.cpp
+			/* processContact(state, contact.getSurface1(), 
+                contact.getSurface2(), iter1->second, 
+                contact.getSurface1Faces(), areaScale, bodyForces, pe); */
+			
+            std::cout << "--- contact info 1: " << std::endl;
+			calcContactInfo
+			   (/* const SimTK::State& state */ istate, 
+				/* SimTK::ContactSurfaceIndex meshIndex */ c.getSurface1(),
+				/* SimTK::ContactSurfaceIndex otherBodyIndex */ c.getSurface2(), 
+				parameters[c.getSurface1()],
+				/* const std::set<int>& insideFaces */ c.getSurface1Faces(),
+				// /*Real areaScale, Vector_<SpatialVec>& bodyForces, Real& pe,*/
+				/* SimTK::GeneralContactSubsystem subsystem */ contactSystem,
+				/* SimTK::ContactSetIndex set */ csi
+				);
+			
+            std::cout << "--- contact info 2: " << std::endl;  // needs to switch surface 1 and 2
+			calcContactInfo
+			   (/* const SimTK::State& state */ istate, 
+				/* SimTK::ContactSurfaceIndex meshIndex */ c.getSurface2(),
+				/* SimTK::ContactSurfaceIndex otherBodyIndex */ c.getSurface1(), 
+				parameters[c.getSurface2()],
+				/* const std::set<int>& insideFaces */ c.getSurface2Faces(),
+				// /*Real areaScale, Vector_<SpatialVec>& bodyForces, Real& pe,*/
+				/* SimTK::GeneralContactSubsystem subsystem */ contactSystem,
+				/* SimTK::ContactSetIndex set */ csi
+				);
+			}
+			// tst Ende
           }
         }
       }
@@ -701,6 +832,7 @@ void OpenSimSimulation::Step()
         {
           const SimTK::ElasticFoundationForce* eff = (const SimTK::ElasticFoundationForce*)(&simTkForce);
           std::cout << "  ElasticFoundationForce: " << eff->getTransitionVelocity() << std::endl;
+		  
         }
       }
       std::cout << std::endl;
@@ -712,7 +844,15 @@ void OpenSimSimulation::Step()
         OpenSim::ModelComponent& mk = mcs[k];
         std::cout << " -> " << mk.getName() << mk.getClassName() << std::endl;
       }
-
+	  
+	  
+	  if (osimModel->getMultibodySystem().hasContactSubsystem())
+	  {
+		const SimTK::GeneralContactSubsystem &contactSubsystem = osimModel->getMultibodySystem().getContactSubsystem();
+		/* std::cout << "-- GeneralContactSubsystem currently contains the following contacts " << contactSubsystem.getContacts() << " --" << std::endl; */
+	  }
+	  
+	  
       if (istate.getNumSubsystems() > 0)
       {
         // get contact snapshot
@@ -733,7 +873,9 @@ void OpenSimSimulation::Step()
           this->contactTracker->getActiveContacts(istate);
 
         int numc = contactSnapshot.getNumContacts();
+        //std::cout << "=== Contact count in contactTracker: " << numc << " ===" << std::endl;
         std::cout << "=== Contact count in contactTracker: " << numc << " ===" << std::endl;
+		std::cout << "-- contact tracker subsystem manages " << contactTracker->getNumSurfaces() << " surfaces --" << std::endl;
       }
 
       // std::cout << "State dump istate: " << std::endl << istate << std::endl;
@@ -748,4 +890,79 @@ void OpenSimSimulation::Step()
     std::cerr << "OpenSim exception: " << ex.getMessage() << std::endl;
     std::cerr << ex.what() << std::endl;
   }
+}
+
+void OpenSimSimulation::calcContactInfo
+   (const SimTK::State& state, 
+    SimTK::ContactSurfaceIndex meshIndex, SimTK::ContactSurfaceIndex otherBodyIndex, 
+    const ElasticFoundationForce_Parameters& param, const std::set<int>& insideFaces,
+    /*Real areaScale, Vector_<SpatialVec>& bodyForces, Real& pe,*/
+	SimTK::GeneralContactSubsystem subsystem,
+	SimTK::ContactSetIndex set) const 
+{
+    const SimTK::ContactGeometry& otherObject = subsystem.getBodyGeometry(set, otherBodyIndex);
+    const SimTK::MobilizedBody& body1 = subsystem.getBody(set, meshIndex);
+    const SimTK::MobilizedBody& body2 = subsystem.getBody(set, otherBodyIndex);
+    const SimTK::Transform t1g = body1.getBodyTransform(state)*subsystem.getBodyTransform(set, meshIndex); // mesh to ground
+    const SimTK::Transform t2g = body2.getBodyTransform(state)*subsystem.getBodyTransform(set, otherBodyIndex); // other object to ground
+    const SimTK::Transform t12 = ~t2g*t1g; // mesh to other object
+
+    // Loop over all the springs, and evaluate the force from each one.
+
+    for (std::set<int>::const_iterator iter = insideFaces.begin(); 
+                                       iter != insideFaces.end(); ++iter) {
+        int face = *iter;
+        SimTK::UnitVec3 normal;
+        bool inside;
+        SimTK::Vec3 nearestPoint = otherObject.findNearestPoint(t12*param.springPosition[face], inside, normal);
+        if (!inside)
+            continue;
+        
+        // Find how much the spring is displaced.
+        
+        nearestPoint = t2g*nearestPoint;
+        const SimTK::Vec3 springPosInGround = t1g*param.springPosition[face];
+        const SimTK::Vec3 displacement = nearestPoint-springPosInGround;
+        const SimTK::Real distance = displacement.norm();
+        if (distance == 0.0)
+            continue;
+        const SimTK::Vec3 forceDir = displacement/distance;
+		
+		std::cout << "distance: " << distance << std::endl; 
+        
+        // Calculate the relative velocity of the two bodies at the contact point.
+        
+        const SimTK::Vec3 station1 = body1.findStationAtGroundPoint(state, nearestPoint);
+        const SimTK::Vec3 station2 = body2.findStationAtGroundPoint(state, nearestPoint);
+        const SimTK::Vec3 v1 = body1.findStationVelocityInGround(state, station1);
+        const SimTK::Vec3 v2 = body2.findStationVelocityInGround(state, station2);
+        const SimTK::Vec3 v = v2-v1;
+        const SimTK::Real vnormal = dot(v, forceDir);
+        const SimTK::Vec3 vtangent = v-vnormal*forceDir;
+        
+        // Calculate the damping force.
+        
+		// expand parameter class for this
+		/* 
+        const SimTK::Real area = areaScale * param.springArea[face];
+        const SimTK::Real f = param.stiffness*area*distance*(1+param.dissipation*vnormal);
+        SimTK::Vec3 force = (f > 0 ? f*forceDir : Vec3(0));
+        
+        // Calculate the friction force.
+        
+        const SimTK::Real vslip = vtangent.norm();
+        if (f > 0 && vslip != 0) {
+            const SimTK::Real vrel = vslip/transitionVelocity;
+            const SimTK::Real ffriction = 
+                f*(std::min(vrel, Real(1))
+                 *(param.dynamicFriction+2*(param.staticFriction-param.dynamicFriction)
+                 /(1+vrel*vrel))+param.viscousFriction*vslip);
+            force += ffriction*vtangent/vslip;
+        }
+
+        body1.applyForceToBodyPoint(state, station1, force, bodyForces);
+        body2.applyForceToBodyPoint(state, station2, -force, bodyForces);
+        pe += param.stiffness*area*displacement.normSqr()/2;
+		*/
+    }
 }
