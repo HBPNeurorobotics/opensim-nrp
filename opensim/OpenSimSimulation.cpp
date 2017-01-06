@@ -107,7 +107,7 @@ void OpenSimSimulation::Init()
       const OpenSim::JointSet& joints = osimModel->getJointSet();
       int numJoints = osimModel->getNumJoints();
 
-      OpenSim::Array< std::string > jointNames;
+      /* OpenSim::Array< std::string > jointNames;
       
       std::cout << "joint ranges: " << std::endl;
       for (int u = 0; u < numJoints; u++)
@@ -119,7 +119,7 @@ void OpenSimSimulation::Init()
 	  OpenSim::Coordinate coordinate = jointCoordinates[0];
 	  std::cout << coordinate.getRangeMin() << ", " << coordinate.getRangeMax()  << " --- " ;
 	}
-      std::cout << std::endl;
+      std::cout << std::endl; */
 
       ////
       const OpenSim::ConstraintSet& constraints = osimModel->getConstraintSet();
@@ -191,7 +191,7 @@ void OpenSimSimulation::Init()
 				  tmpStr << "- auxiliary " << u;
 			}
 		
-			logger->newLogger("Aux", "auxiliaries",
+			logger->newLogger("Aux", "auxiliaries_",
 				"# OpenSim/Simbody dynamics data log file\n# logged data from the Z (auxiliary) vector\n# data columns in this file:\n# time "+tmpStr.str()+" \n");
 		}
 		///////////////////////
@@ -300,6 +300,7 @@ void OpenSimSimulation::Init()
 				if (contactSetInd.isValid())
 				{
 					std::cout << "   Contact set "<< k << " contains " << contactSubsystem.getNumBodies(contactSetInd) << " bodies, with transforms:   " << std::endl;
+					
 					for (int m = 0; m < contactSubsystem.getNumBodies(contactSetInd); ++m)
 					{
 						SimTK::ContactSurfaceIndex contactSurfaceInd(m);
@@ -309,6 +310,19 @@ void OpenSimSimulation::Init()
 							
 							if (logger)
 							{
+								///////////////////////
+								// contact set log
+								std::stringstream tmpStr;
+								tmpStr << "ContactSet_" << k << "_Surface_" << m;
+								std::string contactSetSurface_id = tmpStr.str();
+								
+								tmpStr.str("");
+								
+								tmpStr << "# OpenSim/Simbody dynamics data log file\n# logged data from a contact set with ContactSetIndex " << k << ", corresponding to contact mesh with ContactSurfaceIndex " << m << "\n# (note that in OpenSim a mesh-contact is always applied between the middle of a face of the intersecting mesh and the nearest point of the intersected object, which does not have to be a mesh itself)\n# data columns in this file:\n# time - contact face index - contact face distance - contact force nomal\n";
+								
+								logger->newLogger(contactSetSurface_id, "contact_" + contactSetSurface_id, tmpStr.str());
+								  
+								  
 								// fill ElasticFoundationForce_Parameters set with data (for contact point info calculation)
 								SimTK::ContactSurfaceIndex bodyIndex = contactSurfaceInd;
 								SimTK::GeneralContactSubsystem subsystem = contactSubsystem;
@@ -646,6 +660,7 @@ void OpenSimSimulation::Step()
         {
           SimTK::Contact contact = contacts.at(l);
           std::cout << "   - Set " << k << ", entry " << l << ": " << contact << std::endl;
+          std::cout << "     - condition: " << SimTK::Contact::nameOfCondition (contact.getCondition()) << std::endl;
 
           if (SimTK::PointContact::isInstance(contact))
           {
@@ -700,8 +715,13 @@ void OpenSimSimulation::Step()
                 contact.getSurface2(), iter1->second, 
                 contact.getSurface1Faces(), areaScale, bodyForces, pe); */
 			
-            std::cout << "--- contact info 1: " << std::endl;
-			calcContactInfo
+				
+			if (logger)
+			{
+				std::cout << "--- contact info 1: " << std::endl;
+				
+				std::vector<std::string> logStringVec =
+				calcContactInfo
 			   (/* const SimTK::State& state */ istate, 
 				/* SimTK::ContactSurfaceIndex meshIndex */ c.getSurface1(),
 				/* SimTK::ContactSurfaceIndex otherBodyIndex */ c.getSurface2(), 
@@ -711,18 +731,50 @@ void OpenSimSimulation::Step()
 				/* SimTK::GeneralContactSubsystem subsystem */ contactSystem,
 				/* SimTK::ContactSetIndex set */ csi
 				);
-			
-            std::cout << "--- contact info 2: " << std::endl;  // needs to switch surface 1 and 2
-			calcContactInfo
-			   (/* const SimTK::State& state */ istate, 
-				/* SimTK::ContactSurfaceIndex meshIndex */ c.getSurface2(),
-				/* SimTK::ContactSurfaceIndex otherBodyIndex */ c.getSurface1(), 
-				parameters[c.getSurface2()],
-				/* const std::set<int>& insideFaces */ c.getSurface2Faces(),
-				// /*Real areaScale, Vector_<SpatialVec>& bodyForces, Real& pe,*/
-				/* SimTK::GeneralContactSubsystem subsystem */ contactSystem,
-				/* SimTK::ContactSetIndex set */ csi
-				);
+				
+				std::stringstream tmpStr;
+				tmpStr << "ContactSet_" << k << "_Surface_" << c.getSurface1();
+				std::string contactSetSurface_id = tmpStr.str();
+				
+				tmpStr.str("");
+
+				for (unsigned int a = 0; a < logStringVec.size(); a++)
+				{
+					tmpStr  << currentTime << " " << logStringVec.at(a) << "\n";
+				}
+				
+				logger->logData(contactSetSurface_id,tmpStr.str());
+			}
+				
+			if (logger)
+			{
+				
+				std::cout << "--- contact info 2: " << std::endl;  // needs to switch surface 1 and 2
+				std::vector<std::string> logStringVec = calcContactInfo
+				   (/* const SimTK::State& state */ istate, 
+					/* SimTK::ContactSurfaceIndex meshIndex */ c.getSurface2(),
+					/* SimTK::ContactSurfaceIndex otherBodyIndex */ c.getSurface1(), 
+					parameters[c.getSurface2()],
+					/* const std::set<int>& insideFaces */ c.getSurface2Faces(),
+					// /*Real areaScale, Vector_<SpatialVec>& bodyForces, Real& pe,*/
+					/* SimTK::GeneralContactSubsystem subsystem */ contactSystem,
+					/* SimTK::ContactSetIndex set */ csi
+					);
+					
+				std::stringstream tmpStr;
+				tmpStr << "ContactSet_" << k << "_Surface_" << c.getSurface2();
+				std::string contactSetSurface_id = tmpStr.str();
+				
+				tmpStr.str("");
+
+				for (unsigned int a = 0; a < logStringVec.size(); a++)
+				{
+					tmpStr  << currentTime << " " << logStringVec.at(a) << "\n";
+				}
+				
+				logger->logData(contactSetSurface_id,tmpStr.str());
+			}
+				
 			}
 			// tst Ende
           }
@@ -892,7 +944,8 @@ void OpenSimSimulation::Step()
   }
 }
 
-void OpenSimSimulation::calcContactInfo
+//void OpenSimSimulation::calcContactInfo
+std::vector<std::string> OpenSimSimulation::calcContactInfo
    (const SimTK::State& state, 
     SimTK::ContactSurfaceIndex meshIndex, SimTK::ContactSurfaceIndex otherBodyIndex, 
     const ElasticFoundationForce_Parameters& param, const std::set<int>& insideFaces,
@@ -909,8 +962,12 @@ void OpenSimSimulation::calcContactInfo
 
     // Loop over all the springs, and evaluate the force from each one.
 
+	std::vector<std::string> logVector;
+	
     for (std::set<int>::const_iterator iter = insideFaces.begin(); 
                                        iter != insideFaces.end(); ++iter) {
+										   
+		std::stringstream logStringStream;
         int face = *iter;
         SimTK::UnitVec3 normal;
         bool inside;
@@ -928,17 +985,24 @@ void OpenSimSimulation::calcContactInfo
             continue;
         const SimTK::Vec3 forceDir = displacement/distance;
 		
-		std::cout << "distance: " << distance << std::endl; 
+		/* std::cout << "distance: " << distance << std::endl; 
+		std::cout << "forceDir: " << forceDir << std::endl;  */
+		std::cout << "face " << (*iter) << " distance: " << distance << " forceDir: " << forceDir << std::endl;
+		logStringStream << (*iter) << " " << distance << " " << forceDir[0] << " " << forceDir[1] << " " << forceDir[2];
+		logVector.push_back(logStringStream.str());
+		
+								
+		/* std::cout << "normal?: " << normal << std::endl;  */ // Not entirely sure what this one is for
         
         // Calculate the relative velocity of the two bodies at the contact point.
         
-        const SimTK::Vec3 station1 = body1.findStationAtGroundPoint(state, nearestPoint);
+        /* const SimTK::Vec3 station1 = body1.findStationAtGroundPoint(state, nearestPoint);
         const SimTK::Vec3 station2 = body2.findStationAtGroundPoint(state, nearestPoint);
         const SimTK::Vec3 v1 = body1.findStationVelocityInGround(state, station1);
         const SimTK::Vec3 v2 = body2.findStationVelocityInGround(state, station2);
         const SimTK::Vec3 v = v2-v1;
         const SimTK::Real vnormal = dot(v, forceDir);
-        const SimTK::Vec3 vtangent = v-vnormal*forceDir;
+        const SimTK::Vec3 vtangent = v-vnormal*forceDir; */
         
         // Calculate the damping force.
         
@@ -965,4 +1029,6 @@ void OpenSimSimulation::calcContactInfo
         pe += param.stiffness*area*displacement.normSqr()/2;
 		*/
     }
+	
+	return logVector;
 }

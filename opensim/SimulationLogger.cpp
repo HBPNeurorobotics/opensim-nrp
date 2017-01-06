@@ -35,9 +35,6 @@ void SimulationLogger::newLogger(const std::string& objectToLog, const std::stri
 	log_stream.open(log_file_name.c_str(), std::ios::out);
 	if (log_stream.is_open())
 	{
-		/* log_stream << "# OpenSim/Simbody dynamics data log file\n";
-		log_stream << "# data columns in this file:\n";
-		log_stream << "# time - angular velocity - translational velocity - angular acceleration - translational acceleration \n"; */
 		log_stream << dataDescription;
 	}
 	log_stream.close();
@@ -49,7 +46,7 @@ void SimulationLogger::logData(const std::string& objectToLog, const std::string
 	
 	if (logFiles.find(objectToLog) == logFiles.end())
 	{
-		newLogger(objectToLog, objectToLog + "_logFile", "no data description provided (use the newLogger method)");
+		newLogger(objectToLog, objectToLog + "_logFile", "no data description provided (use the newLogger method)\n");
 	}
 	log_file_name = logFiles[objectToLog];
 	
@@ -59,21 +56,6 @@ void SimulationLogger::logData(const std::string& objectToLog, const std::string
 	if (log_stream.is_open())
 	{
 		log_stream << logString;
-		/* log_stream << currentTime + timeStep */
-	  // << " " << btv[0]
-		   // << " " << btv[1]
-		   // << " " << bav
-		   // << " " << bta[0]
-		   // << " " << bta[1]
-		   // << " " << baa
-		   // << "\n";
-		   /* << " " << btv[0][0] << " " << btv[0][1] << " " << btv[0][2]
-		   << " " << btv[1][0] << " " << btv[1][1] << " " << btv[1][2] */
-	  //<< " " << bav
-		   /* << " " << bta[0][0] << " " << bta[0][1] << " " << bta[0][2]
-		   << " " << bta[1][0] << " " << bta[1][1] << " " << bta[1][2] */
-	  //<< " " << baa
-		   // << "\n";
 	}
 	
 	log_stream.close();

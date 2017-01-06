@@ -67,7 +67,8 @@ class OpenSimSimulation
 				SimTK::Array_<SimTK::Real> springArea;
 		};
 	
-		void calcContactInfo(const SimTK::State& state, 
+		//void calcContactInfo(const SimTK::State& state, 
+		std::vector<std::string> calcContactInfo(const SimTK::State& state, 
 			SimTK::ContactSurfaceIndex meshIndex, SimTK::ContactSurfaceIndex otherBodyIndex, 
 			const ElasticFoundationForce_Parameters& param, const std::set<int>& insideFaces,
 			/*Real areaScale, Vector_<SpatialVec>& bodyForces, Real& pe,*/
