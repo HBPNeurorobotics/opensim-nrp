@@ -610,12 +610,6 @@ void OpenSimSimulation::Step()
 				}
 			}
 			
-			const SimTK::MobilizedBody::Pin pmb = mb;
-			if (pmb)
-			{
-				std::cout << "Hurra" << std::endl;
-			}
-			
           }
         }
         catch (SimTK::Exception::CacheEntryOutOfDate& ex)
