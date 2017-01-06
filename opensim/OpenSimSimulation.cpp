@@ -318,7 +318,8 @@ void OpenSimSimulation::Init()
 								
 								tmpStr.str("");
 								
-								tmpStr << "# OpenSim/Simbody dynamics data log file\n# logged data from a contact set with ContactSetIndex " << k << ", corresponding to contact mesh with ContactSurfaceIndex " << m << "\n# (note that in OpenSim a mesh-contact is always applied between the middle of a face of the intersecting mesh and the nearest point of the intersected object, which does not have to be a mesh itself)\n# data columns in this file:\n# time - contact face index - contact face distance - contact force nomal\n";
+								/*tmpStr << "# OpenSim/Simbody dynamics data log file\n# logged data from a contact set with ContactSetIndex " << k << ", corresponding to contact mesh with ContactSurfaceIndex " << m << "\n# (note that in OpenSim a mesh-contact is always applied between the middle of a face of the intersecting mesh and the nearest point of the intersected object, which does not have to be a mesh itself)\n# data columns in this file:\n# time - contact face index - contact face distance - contact force normal\n";*/
+								tmpStr << "# OpenSim/Simbody dynamics data log file\n# logged data from a contact set with ContactSetIndex " << k << ", corresponding to contact mesh with ContactSurfaceIndex " << m << "\n# (note that in OpenSim a mesh-contact is always applied between the middle of a face of the intersecting mesh and the nearest point of the intersected object, which does not have to be a mesh itself)\n# data columns in this file:\n# time - contact face index - position of contact point on intersecting mesh - position of contact point on intersected object - contact face distance - contact force normal\n";
 								
 								logger->newLogger(contactSetSurface_id, "contact_" + contactSetSurface_id, tmpStr.str());
 								  
@@ -452,9 +453,9 @@ void OpenSimSimulation::Step()
 
       std::cout << "Stage after integration: " << istate.getSystemStage().getName() << std::endl;
 
-      /* std::cout << "new Q (pos): " << istate.getQ() << std::endl;
+      std::cout << "new Q (pos): " << istate.getQ() << std::endl;
       std::cout << "new U (vel): " << istate.getU() << std::endl;
-      std::cout << "new Z (aux): " << istate.getZ() << std::endl; */
+      std::cout << "new Z (aux): " << istate.getZ() << std::endl;
 	  unsigned int posVelSize = std::min( istate.getQ().size(), istate.getU().size() ); // just in case, those should always be the same, unless there is an object that has a position but no velocity or vice versa
 	  for (unsigned int u=0; u < posVelSize; u++)
 	  {
@@ -588,23 +589,33 @@ void OpenSimSimulation::Step()
             //std::cout << "  --> : angular velocity: " << bav << "; angular acceleration: " << baa << std::endl;			
             std::cout << "  --> : angular velocity: " << btv[0] << "; angular acceleration: " << btv[1] << std::endl; */
 			
-			std::string mobod_id;
+			if (logger)
 			{
-			  std::stringstream tmpStr;
-			  tmpStr << "Mobod_" << k;
-			  mobod_id = tmpStr.str();
-			  
-			  tmpStr.str("");
-			  
-			  tmpStr  << currentTime + timeStep
-					<< " " << btv[0][0] << " " << btv[0][1] << " " << btv[0][2]
-					<< " " << btv[1][0] << " " << btv[1][1] << " " << btv[1][2]
-					<< " " << bta[0][0] << " " << bta[0][1] << " " << bta[0][2]
-					<< " " << bta[1][0] << " " << bta[1][1] << " " << bta[1][2]
-					<< "\n";
-			  
-			  logger->logData(mobod_id,tmpStr.str());
+				std::string mobod_id;
+				{
+				  std::stringstream tmpStr;
+				  tmpStr << "Mobod_" << k;
+				  mobod_id = tmpStr.str();
+				  
+				  tmpStr.str("");
+				  
+				  tmpStr  << currentTime + timeStep
+						<< " " << btv[0][0] << " " << btv[0][1] << " " << btv[0][2]
+						<< " " << btv[1][0] << " " << btv[1][1] << " " << btv[1][2]
+						<< " " << bta[0][0] << " " << bta[0][1] << " " << bta[0][2]
+						<< " " << bta[1][0] << " " << bta[1][1] << " " << bta[1][2]
+						<< "\n";
+				  
+				  logger->logData(mobod_id,tmpStr.str());
+				}
 			}
+			
+			const SimTK::MobilizedBody::Pin pmb = mb;
+			if (pmb)
+			{
+				std::cout << "Hurra" << std::endl;
+			}
+			
           }
         }
         catch (SimTK::Exception::CacheEntryOutOfDate& ex)
@@ -987,8 +998,13 @@ std::vector<std::string> OpenSimSimulation::calcContactInfo
 		
 		/* std::cout << "distance: " << distance << std::endl; 
 		std::cout << "forceDir: " << forceDir << std::endl;  */
-		std::cout << "face " << (*iter) << " distance: " << distance << " forceDir: " << forceDir << std::endl;
-		logStringStream << (*iter) << " " << distance << " " << forceDir[0] << " " << forceDir[1] << " " << forceDir[2];
+		std::cout << "face " << (*iter) << " springPosition: " << param.springPosition[face] << " nearestPoint: " << nearestPoint << " distance: " << distance << " forceDir: " << forceDir << std::endl;
+		logStringStream << (*iter) 
+						/* << " " << param.springPosition[face][0] << " " << param.springPosition[face][1] << " " << param.springPosition[face][2] */
+						<< " " << springPosInGround[0] << " " << springPosInGround[1] << " " << springPosInGround[2]
+						<< " " << nearestPoint[0] << " " << nearestPoint[1] << " " << nearestPoint[2]
+						<< " " << distance
+						<< " " << forceDir[0] << " " << forceDir[1] << " " << forceDir[2];
 		logVector.push_back(logStringStream.str());
 		
 								
