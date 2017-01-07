@@ -198,7 +198,8 @@ void OpenSimSimulation::Init()
 		// Mobod log
 		
 		//osimModel->getMultibodySystem().realize(isi);
-		int numMobilizedBodies = osimModel->getMatterSubsystem().getNumMobilities();
+		//int numMobilizedBodies = osimModel->getMatterSubsystem().getNumMobilities();
+		int numMobilizedBodies = osimModel->getMatterSubsystem().getNumBodies();
 
 		for (int k = 0; k < numMobilizedBodies; ++k)
 		{
