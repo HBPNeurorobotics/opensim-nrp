@@ -460,6 +460,8 @@ void OpenSimSimulation::Step()
 	  unsigned int posVelSize = std::min( istate.getQ().size(), istate.getU().size() ); // just in case, those should always be the same, unless there is an object that has a position but no velocity or vice versa
 	  for (unsigned int u=0; u < posVelSize; u++)
 	  {
+		if (logger)
+		{
 		  std::string posvel_id;
 		  {
 			  std::stringstream tmpStr;
@@ -474,8 +476,10 @@ void OpenSimSimulation::Step()
 			  
 			  logger->logData(posvel_id,tmpStr.str());
 		  }
+		}
 	  }
 	  
+	  if (logger)
 	  {
 			std::stringstream tmpStr;
 			tmpStr  << currentTime + timeStep;
@@ -630,20 +634,23 @@ void OpenSimSimulation::Step()
         for (int k = 0; k < rbForces.size(); ++k)
         {
           //std::cout << " - " << k << ": " << rbForces[k] << std::endl;
-		  std::string rigidForce_id;
+		  if(logger)
 		  {
-			  std::stringstream tmpStr;
-			  tmpStr << "RigidForce_" << k;
-			  rigidForce_id = tmpStr.str();
-			  
-			  tmpStr.str("");
-			  
-			  tmpStr  << currentTime + timeStep
-					<< " " << rbForces[k][0][0] << " " << rbForces[k][0][1] << " " << rbForces[k][0][2]
-					<< " " << rbForces[k][1][0] << " " << rbForces[k][1][1] << " " << rbForces[k][1][2]
-					<< "\n";
-			  
-			  logger->logData(rigidForce_id,tmpStr.str());
+			  std::string rigidForce_id;
+			  {
+				  std::stringstream tmpStr;
+				  tmpStr << "RigidForce_" << k;
+				  rigidForce_id = tmpStr.str();
+				  
+				  tmpStr.str("");
+				  
+				  tmpStr  << currentTime + timeStep
+						<< " " << rbForces[k][0][0] << " " << rbForces[k][0][1] << " " << rbForces[k][0][2]
+						<< " " << rbForces[k][1][0] << " " << rbForces[k][1][1] << " " << rbForces[k][1][2]
+						<< "\n";
+			  	
+				  logger->logData(rigidForce_id,tmpStr.str());
+		  	}
 		  }
         }
       }
@@ -858,7 +865,8 @@ void OpenSimSimulation::Step()
           //std::cout << fLabels[m] << " = " << fValues[m] << ";";
           std::cout << fLabels[m] << " = " << fValues[m] << "\n";
 		} */
-		
+	if(logger)
+	{
 		std::string force_id;
 		{
 			std::stringstream tmpStr;
@@ -876,6 +884,7 @@ void OpenSimSimulation::Step()
 			
 			logger->logData(force_id,tmpStr.str());
 		}
+	}
 
         std::cout << std::endl;
         SimTK::ForceIndex force_idx = force->getForceIndex();
