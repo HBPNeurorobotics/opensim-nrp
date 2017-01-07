@@ -4,7 +4,7 @@ project(NRP_OpenSim_Benchmark)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-set(BUILD_VERSIONED_LIBS True)
+# set(BUILD_VERSIONED_LIBS True)
 find_package(Simbody)
 if (Simbody_FOUND)
     message(STATUS "Found Simbody installation.")

@@ -1,4 +1,7 @@
-SET(APPNAME id)
+# TruPhysics begin
+# Rename the executable to avoid a nameclash with /usr/bin/id
+SET(APPNAME opensim_id)
+# TruPhysics end
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
 						  ${OpenSim_SOURCE_DIR}/Vendors)
@@ -9,7 +12,7 @@ LINK_LIBRARIES(debug osimTools${CMAKE_DEBUG_POSTFIX} optimized osimTools
                debug osimActuators${CMAKE_DEBUG_POSTFIX} optimized osimActuators
                debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation)
 
-ADD_EXECUTABLE(${APPNAME} ${APPNAME}.cpp)
+ADD_EXECUTABLE(${APPNAME} id.cpp)
 INSTALL_TARGETS(/bin/ ${APPNAME})
 SET_TARGET_PROPERTIES(${APPNAME} PROPERTIES PROJECT_LABEL "Applications - ${APPNAME}")
 

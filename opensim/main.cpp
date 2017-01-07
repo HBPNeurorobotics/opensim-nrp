@@ -77,6 +77,7 @@ int main(int argc, char** argv)
   else
   {
     std::cout << "No scene file to use has been provided!" << std::endl;
+    std::cout << "Usage: " << desc << std::endl;
     return 1;
   }
   return 0;

@@ -86,7 +86,7 @@ else()
 
     # UNIX includes Mac, Linux, and Cygwin
     if (UNIX)
-        list(APPEND Simbody_SEARCH_PATHS /usr/local)
+        list(APPEND Simbody_SEARCH_PATHS /usr/local /usr)
     endif()
     
     if (APPLE) # Mac only
@@ -180,26 +180,34 @@ endif()
 # UNVERSIONED LIBRARIES #
 #########################
 
-if (BUILD_UNVERSIONED_LIBRARIES)
+# if (BUILD_UNVERSIONED_LIBRARIES)
 # Find out which of the unversioned libraries are available.
 find_library(Simbody_LIBRARY NAMES ${NS}SimTKsimbody
     PATHS ${Simbody_LIB_DIR}
           /usr/local/lib
+          /usr/lib
+          /usr/lib/x86_64-linux-gnu
     DOC "This is the main Simbody library."
     NO_DEFAULT_PATH)
 find_library(Simbody_STATIC_LIBRARY NAMES ${NS}SimTKsimbody_static
     PATHS ${Simbody_LIB_DIR}
           /usr/local/lib
+          /usr/lib
+          /usr/lib/x86_64-linux-gnu
     DOC "This is the main Simbody static library."
     NO_DEFAULT_PATH)
 find_library(Simbody_DEBUG_LIBRARY NAMES ${NS}SimTKsimbody_d
     PATHS ${Simbody_LIB_DIR}
           /usr/local/lib
+          /usr/lib
+          /usr/lib/x86_64-linux-gnu
     DOC "This is the main Simbody debug library."
     NO_DEFAULT_PATH)
 find_library(Simbody_STATIC_DEBUG_LIBRARY NAMES ${NS}SimTKsimbody_static_d
     PATHS ${Simbody_LIB_DIR}
           /usr/local/lib
+          /usr/lib
+          /usr/lib/x86_64-linux-gnu
     DOC "This is the main Simbody static debug library."
     NO_DEFAULT_PATH)
 
@@ -265,7 +273,7 @@ else()
     set(Simbody_STATIC_LIBRARIES Simbody_STATIC_LIBRARIES-NOTFOUND CACHE STRING 
         "Simbody static libraries" FORCE)
 endif()
-endif(BUILD_UNVERSIONED_LIBRARIES)
+# endif(BUILD_UNVERSIONED_LIBRARIES)
 
 
 #######################
