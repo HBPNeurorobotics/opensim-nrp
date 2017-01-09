@@ -10,6 +10,7 @@ logFileTypes = {
     "position_and_velocity_": "posVelLog",
     "auxiliaries": "auxLog",
     "velocities_and_accelerations_": "velAccLog",
+    "pin_data_and_mobilizer_reactions_": "pinMobReac",
     "rigid_body_forces_": "rigidForceLog",
     "force_set_": "forceSetLog",
     "contact_": "contactLog"
@@ -128,6 +129,55 @@ def generateImage(type, filename):
                          ';'
 
         executeGnuplot(filename, gnuplotCommandString, "Object translational velocity and translational acceleration", "_translational")
+
+    elif type ==  "pinMobReac":
+        # OpenSim/Simbody dynamics data log file
+        # logged data from Mobod_0
+        # data columns in this file:
+        # time - pin angle - pin rate - reaction on body at mobilizer frame (moment and force) - reaction on parent at mobilizer frame (moment and force)
+
+        gnuplotCommandString = 'plot' + dataRangesString + ' '\
+                         + dataFileString + ' using 1:2 w p pt ' + pointType  + ' ps ' + pointSize + ' lc rgb "dark-red" title "angle", ' \
+                         + dataFileString + ' using 1:2 w l lw ' + curveWidth + ' lc rgb "dark-red" notitle, ' \
+                         + dataFileString + ' using 1:3 w p pt ' + pointType  + ' ps ' + pointSize + ' lc rgb "dark-green" title "rate", ' \
+                         + dataFileString + ' using 1:3 w l lw ' + curveWidth + ' lc rgb "dark-green" notitle, ' \
+                         ';'
+
+        executeGnuplot(filename, gnuplotCommandString, "Pin joint angle and turn rate", "_pin")
+
+        gnuplotCommandString = 'plot' + dataRangesString + ' '\
+                         + dataFileString + ' using 1:4 w p pt ' + pointType  + ' ps ' + pointSize + ' lc rgb "dark-red" title "moment (rot) x", ' \
+                         + dataFileString + ' using 1:4 w l lw ' + curveWidth + ' lc rgb "dark-red" notitle, ' \
+                         + dataFileString + ' using 1:5 w p pt ' + pointType  + ' ps ' + pointSize + ' lc rgb "dark-green" title "moment (rot) y", ' \
+                         + dataFileString + ' using 1:5 w l lw ' + curveWidth + ' lc rgb "dark-green" notitle, ' \
+                         + dataFileString + ' using 1:6 w p pt ' + pointType  + ' ps ' + pointSize + ' lc rgb "dark-blue" title "moment (rot) z", ' \
+                         + dataFileString + ' using 1:6 w l lw ' + curveWidth + ' lc rgb "dark-blue" notitle, ' \
+                         + dataFileString + ' using 1:7 w p pt ' + pointType  + ' ps ' + pointSize + ' lc rgb "red" title "force (tran) x", ' \
+                         + dataFileString + ' using 1:7 w l lw ' + curveWidth + ' lc rgb "red" notitle, ' \
+                         + dataFileString + ' using 1:8 w p pt ' + pointType  + ' ps ' + pointSize + ' lc rgb "green" title "force (tran) y", ' \
+                         + dataFileString + ' using 1:8 w l lw ' + curveWidth + ' lc rgb "green" notitle, ' \
+                         + dataFileString + ' using 1:9 w p pt ' + pointType  + ' ps ' + pointSize + ' lc rgb "blue" title "force (tran) z", ' \
+                         + dataFileString + ' using 1:9 w l lw ' + curveWidth + ' lc rgb "blue" notitle ' \
+                         ';'
+
+        executeGnuplot(filename, gnuplotCommandString, "Mobilizer reaction on body at mobilizer frame", "_bodyReaction")
+
+        gnuplotCommandString = 'plot' + dataRangesString + ' '\
+                         + dataFileString + ' using 1:10 w p pt ' + pointType  + ' ps ' + pointSize + ' lc rgb "dark-red" title "moment (rot) x", ' \
+                         + dataFileString + ' using 1:10 w l lw ' + curveWidth + ' lc rgb "dark-red" notitle, ' \
+                         + dataFileString + ' using 1:11 w p pt ' + pointType  + ' ps ' + pointSize + ' lc rgb "dark-green" title "moment (rot) y", ' \
+                         + dataFileString + ' using 1:11 w l lw ' + curveWidth + ' lc rgb "dark-green" notitle, ' \
+                         + dataFileString + ' using 1:12 w p pt ' + pointType  + ' ps ' + pointSize + ' lc rgb "dark-blue" title "moment (rot) z", ' \
+                         + dataFileString + ' using 1:12 w l lw ' + curveWidth + ' lc rgb "dark-blue" notitle, ' \
+                         + dataFileString + ' using 1:13 w p pt ' + pointType  + ' ps ' + pointSize + ' lc rgb "red" title "force (tran) x", ' \
+                         + dataFileString + ' using 1:13 w l lw ' + curveWidth + ' lc rgb "red" notitle, ' \
+                         + dataFileString + ' using 1:14 w p pt ' + pointType  + ' ps ' + pointSize + ' lc rgb "green" title "force (tran) y", ' \
+                         + dataFileString + ' using 1:14 w l lw ' + curveWidth + ' lc rgb "green" notitle, ' \
+                         + dataFileString + ' using 1:15 w p pt ' + pointType  + ' ps ' + pointSize + ' lc rgb "blue" title "force (tran) z", ' \
+                         + dataFileString + ' using 1:15 w l lw ' + curveWidth + ' lc rgb "blue" notitle ' \
+                         ';'
+
+        executeGnuplot(filename, gnuplotCommandString, "Mobilizer reaction on parent at mobilizer frame", "_parentReaction")
 
     elif type == "rigidForceLog":
         # OpenSim/Simbody dynamics data log file

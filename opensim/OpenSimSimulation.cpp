@@ -198,7 +198,7 @@ void OpenSimSimulation::Init()
 		// Mobod log
 		
 		//osimModel->getMultibodySystem().realize(isi);
-		//int numMobilizedBodies = osimModel->getMatterSubsystem().getNumMobilities();
+		//aaaaaaaaaaaaaaaaaaaaaaaaaaa//int numMobilizedBodies = osimModel->getMatterSubsystem().getNumMobilities();
 		int numMobilizedBodies = osimModel->getMatterSubsystem().getNumBodies();
 
 		for (int k = 0; k < numMobilizedBodies; ++k)
@@ -217,6 +217,16 @@ void OpenSimSimulation::Init()
 				
 					logger->newLogger(mobod_id, "velocities_and_accelerations_" + mobod_id,
 					  "# OpenSim/Simbody dynamics data log file\n# logged data from "+mobod_id+"\n# data columns in this file:\n# time - angular velocity - translational velocity - angular acceleration - translational acceleration \n");
+					  
+					std::string mobod_add_id;
+					{
+					  std::stringstream tmpStr;
+					  tmpStr << "Mobod_Additional_" << k;
+					  mobod_add_id = tmpStr.str();
+					}
+					
+					logger->newLogger(mobod_add_id, "pin_data_and_mobilizer_reactions_" + mobod_id,
+					  "# OpenSim/Simbody dynamics data log file\n# logged data from "+mobod_id+"\n# data columns in this file:\n# time - pin angle - pin rate - reaction on body at mobilizer frame (moment and force) - reaction on parent at mobilizer frame (moment and force) \n");
 				}
 			}
 			catch (SimTK::Exception::CacheEntryOutOfDate& ex)
@@ -572,8 +582,10 @@ void OpenSimSimulation::Step()
       std::cout << "new U (vel): " << istate.getU() << std::endl;
       std::cout << "new Z (aux): " << istate.getZ() << std::endl; */
 
+	  std::cout << "Mobility forces: " << osimModel->getMultibodySystem().getMobilityForces(istate, istate.getSystemStage()) << std::endl;
+	
       osimModel->getMultibodySystem().realize(ws);
-      //int numMobilizedBodies = osimModel->getMatterSubsystem().getNumMobilities();
+      //aaaaaaaaaaaaaaaaaaaaaaaaaaa//int numMobilizedBodies = osimModel->getMatterSubsystem().getNumMobilities();
       int numMobilizedBodies = osimModel->getMatterSubsystem().getNumBodies();
 
       std::cout << "=== MobilizedBodies: " << numMobilizedBodies << " ===" << std::endl;
@@ -598,6 +610,33 @@ void OpenSimSimulation::Step()
             //std::cout << "  --> : angular velocity: " << bav << "; angular acceleration: " << baa << std::endl;			
             std::cout << "  --> : angular velocity: " << btv[0] << "; angular acceleration: " << btv[1] << std::endl; */
 			
+			SimTK::MobilizedBody::Pin* mbp = (static_cast<SimTK::MobilizedBody::Pin*>(&const_cast<SimTK::MobilizedBody&>(mb))); // this is possibly a crime
+			/*std::cout << "mbp->getAngle(ws): " << mbp->getAngle(ws) << std::endl;
+			std::cout << "mbp->getRate(ws) : " << mbp->getRate(ws) << std::endl;
+			//std::cout << "mbp->getAppliedPinTorque: " << mbp->getAppliedPinTorque(istate,osimModel->getMultibodySystem().getMobilityForces(istate, istate.getSystemStage())) << std::endl; // this either is useless or I'm not using it correctly
+			std::cout << "mb.getTauAsVector(ws): " << mb.getTauAsVector(ws) << std::endl;
+			std::cout << "mb.findMobilizerReactionOnBodyAtMInGround(ws)       : " << mb.findMobilizerReactionOnBodyAtMInGround(ws) << std::endl;
+			std::cout << "mb.findMobilizerReactionOnBodyAtOriginInGround(ws)  : " << mb.findMobilizerReactionOnBodyAtOriginInGround(ws) << std::endl;
+			std::cout << "mb.findMobilizerReactionOnParentAtFInGround(ws)     : " << mb.findMobilizerReactionOnParentAtFInGround(ws) << std::endl;
+			std::cout << "mb.findMobilizerReactionOnParentAtOriginInGround(ws): " << mb.findMobilizerReactionOnParentAtOriginInGround(ws) << std::endl;*/
+			
+			SimTK::Real pinAngle = mbp->getAngle(ws);
+			SimTK::Real pinRate = mbp->getRate(ws);
+			
+            const SimTK::SpatialVec& reactionOnBodyAtMobilizerFrame = mb.findMobilizerReactionOnBodyAtMInGround(ws);
+            const SimTK::SpatialVec& reactionOnParentAtMobilizerFrame = mb.findMobilizerReactionOnParentAtFInGround(ws);
+			
+			/* std::cout << "Additonal mobilizer data: " << std::endl;
+			std::cout << "  --> pin angle: " << pinAngle << "; pin rate: " << pinRate << std::endl;
+			std::cout << "  --> reaction on body at mobilizer frame: \n" ;
+			std::cout << "  		- moment (rot): " << reactionOnBodyAtMobilizerFrame[0] << std::endl;
+			std::cout << "  		- force  (trn): " << reactionOnBodyAtMobilizerFrame[1] << std::endl;
+			std::cout << "  --> reaction on parent at mobilizer frame: \n";
+			std::cout << "  		- moment (rot): " << reactionOnParentAtMobilizerFrame[0] << std::endl;
+			std::cout << "  		- force  (trn): " << reactionOnParentAtMobilizerFrame[1] << std::endl; */
+			
+			
+			
 			if (logger)
 			{
 				std::string mobod_id;
@@ -616,6 +655,25 @@ void OpenSimSimulation::Step()
 						<< "\n";
 				  
 				  logger->logData(mobod_id,tmpStr.str());
+				  
+				  std::string mobod_add_id;
+				  {
+				    std::stringstream tmpStr;
+				    tmpStr << "Mobod_Additional_" << k;
+				    mobod_add_id = tmpStr.str();
+				
+				    tmpStr.str("");
+				  
+				    tmpStr  << currentTime + timeStep
+						<< " " << pinAngle << " " << pinRate 
+						<< " " << reactionOnBodyAtMobilizerFrame[0][0] << " " << reactionOnBodyAtMobilizerFrame[0][1] << " " << reactionOnBodyAtMobilizerFrame[0][2]
+						<< " " << reactionOnBodyAtMobilizerFrame[1][0] << " " << reactionOnBodyAtMobilizerFrame[1][1] << " " << reactionOnBodyAtMobilizerFrame[1][2]
+						<< " " << reactionOnParentAtMobilizerFrame[0][0] << " " << reactionOnParentAtMobilizerFrame[0][1] << " " << reactionOnParentAtMobilizerFrame[0][2]
+						<< " " << reactionOnParentAtMobilizerFrame[1][0] << " " << reactionOnParentAtMobilizerFrame[1][1] << " " << reactionOnParentAtMobilizerFrame[1][2]
+						<< "\n";
+						
+				    logger->logData(mobod_add_id,tmpStr.str());
+				  }
 				}
 			}
 			
@@ -1006,7 +1064,7 @@ std::vector<std::string> OpenSimSimulation::calcContactInfo
 		
 		/* std::cout << "distance: " << distance << std::endl; 
 		std::cout << "forceDir: " << forceDir << std::endl;  */
-		std::cout << "face " << (*iter) << " springPosition: " << param.springPosition[face] << " nearestPoint: " << nearestPoint << " distance: " << distance << " forceDir: " << forceDir << std::endl;
+		//std::cout << "face " << (*iter) << " springPosition: " << param.springPosition[face] << " nearestPoint: " << nearestPoint << " distance: " << distance << " forceDir: " << forceDir << std::endl;
 		logStringStream << (*iter) 
 						/* << " " << param.springPosition[face][0] << " " << param.springPosition[face][1] << " " << param.springPosition[face][2] */
 						<< " " << springPosInGround[0] << " " << springPosInGround[1] << " " << springPosInGround[2]
