@@ -50,7 +50,9 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(include)
+include_directories(include
+                    ${CMAKE_CURRENT_SOURCE_DIR}/../common)
+
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${GAZEBO_INCLUDE_DIRS}
@@ -61,6 +63,8 @@ include_directories(
  add_library(conveyor_belt_plugin
    src/side_contact_plugin.cpp
    src/conveyor_belt_plugin.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/../common/SimulationLogger.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/../common/SimulationLogger.h
  )
 
 link_directories(

@@ -256,6 +256,10 @@ void OpenSimSimulation::Init()
 		{
 			std::clog << "Fallthrough exception retrieving Simbody RigidBody forces: " << ex.what() << std::endl;
 		}
+        catch (SimTK::Exception::Cant& ex)
+        {
+            std::clog << "Fallthrough exception retrieving Simbody RigidBody forces: " << ex.what() << std::endl;
+        }
 		
 		///////////////////////
 		// force set log

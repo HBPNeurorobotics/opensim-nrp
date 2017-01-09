@@ -29,12 +29,14 @@ endif()
 
 find_package(Boost COMPONENTS program_options filesystem REQUIRED)
 
+include_directories(${CMAKE_SOURCE_DIR}/../common)
+
 set(benchmark_SRCS  main.cpp
                     OpenSimSimulation.cpp
-					SimulationLogger.cpp)
+                    ${CMAKE_SOURCE_DIR}/../common/SimulationLogger.cpp)
 
 set(benchmark_HEADERS OpenSimSimulation.h
-					  SimulationLogger.h)
+                      ${CMAKE_SOURCE_DIR}/../common/SimulationLogger.h)
 
 include_directories(${Boost_INCLUDE_DIR})
                     
