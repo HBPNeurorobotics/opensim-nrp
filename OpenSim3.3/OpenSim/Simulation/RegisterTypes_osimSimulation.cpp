@@ -40,6 +40,7 @@
 #include "Model/CoordinateLimitForce.h"
 #include "Model/CoordinateSet.h"
 #include "Model/ElasticFoundationForce.h"
+#include "Model/ConveyorBeltForce.h" // TP
 #include "Model/HuntCrossleyForce.h"
 #include "Model/Ligament.h"
 #include "Model/JointSet.h"
@@ -191,10 +192,13 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( CoordinateLimitForce() );
     Object::registerType( HuntCrossleyForce() );
     Object::registerType( ElasticFoundationForce() );
+    Object::registerType( ConveyorBeltForce() ); // TP
     Object::registerType( HuntCrossleyForce::ContactParameters() );
     Object::registerType( HuntCrossleyForce::ContactParametersSet() );
     Object::registerType( ElasticFoundationForce::ContactParameters() );
     Object::registerType( ElasticFoundationForce::ContactParametersSet() );
+    Object::registerType( ConveyorBeltForce::ContactParameters() ); // TP
+    Object::registerType( ConveyorBeltForce::ContactParametersSet() ); // TP
     Object::registerType( PointOnLineConstraint() );
     Object::registerType( RollingOnSurfaceConstraint() );
     Object::registerType( Ligament() );

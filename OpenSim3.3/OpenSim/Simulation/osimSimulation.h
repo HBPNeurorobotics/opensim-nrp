@@ -39,6 +39,7 @@
 #include "Model/ContactSphere.h"
 #include "Model/CoordinateSet.h"
 #include "Model/ElasticFoundationForce.h"
+#include "Model/ConveyorBeltForce.h" // TP
 #include "Model/HuntCrossleyForce.h"
 #include "Model/Ligament.h"
 #include "Model/JointSet.h"
