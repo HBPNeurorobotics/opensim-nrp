@@ -157,6 +157,7 @@ find_path(OPENSIM_INCLUDE_DIR
     PATHS ${OPENSIM_SEARCH_PATHS}
     PATH_SUFFIXES "sdk/include" "opensim/sdk/include" "OpenSim/sdk/include"
     DOC ${OPENSIM_INCLUDE_DIR_DOC}
+    NO_DEFAULT_PATH
     )
 
 # This change is necessary for Simbody 3.4 and beyond, and is incompatible
