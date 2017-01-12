@@ -169,8 +169,8 @@ namespace SimTK{
 	force += ffriction*vtangent/vslip;
       }
 
-      force +=  Vec3(0,0,1);
-	  std::cout << "conveyorForceDirection: " << conveyorForceDirection << std::endl;
+      force +=  conveyorForceDirection;
+	  //std::cout << "conveyorForceDirection: " << conveyorForceDirection << std::endl;
 
       body1.applyForceToBodyPoint(state, station1, force, bodyForces);
       body2.applyForceToBodyPoint(state, station2, -force, bodyForces);
