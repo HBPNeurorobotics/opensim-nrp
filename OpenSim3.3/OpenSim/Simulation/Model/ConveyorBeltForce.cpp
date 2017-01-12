@@ -34,7 +34,7 @@ namespace SimTK{
 
   ConveyorBeltForceImpl::ConveyorBeltForceImpl
   (GeneralContactSubsystem& subsystem, ContactSetIndex set) : 
-    subsystem(subsystem), set(set), transitionVelocity(Real(0.01)) {
+    subsystem(subsystem), set(set), transitionVelocity(Real(0.01)), conveyorForceDirection(Vec3(0,0,0)) {
     
   }
 
@@ -170,6 +170,7 @@ namespace SimTK{
       }
 
       force +=  Vec3(0,0,1);
+	  std::cout << "conveyorForceDirection: " << conveyorForceDirection << std::endl;
 
       body1.applyForceToBodyPoint(state, station1, force, bodyForces);
       body2.applyForceToBodyPoint(state, station2, -force, bodyForces);
@@ -215,12 +216,14 @@ namespace OpenSim {
     const ContactParametersSet& contactParametersSet = 
       get_contact_parameters();
     const double& transitionVelocity = get_transition_velocity();
+    const SimTK::Vec3& conveyorForceDirection = get_conveyor_force_direction();
 
     SimTK::GeneralContactSubsystem& contacts = system.updContactSubsystem();
     SimTK::SimbodyMatterSubsystem& matter = system.updMatterSubsystem();
     SimTK::ContactSetIndex set = contacts.createContactSet();
     SimTK::ConveyorBeltForce force(_model->updForceSubsystem(), contacts, set);
     force.setTransitionVelocity(transitionVelocity);
+    force.setConveyorForceDirection(conveyorForceDirection);
     for (int i = 0; i < contactParametersSet.getSize(); ++i)
       {
         ContactParameters& params = contactParametersSet.get(i);
@@ -249,6 +252,7 @@ namespace OpenSim {
   {
     constructProperty_contact_parameters(ContactParametersSet());
     constructProperty_transition_velocity(0.01);
+	constructProperty_conveyor_force_direction(SimTK::Vec3(0,0,0));
   }
 
 
@@ -275,6 +279,16 @@ namespace OpenSim {
   void ConveyorBeltForce::setTransitionVelocity(double velocity)
   {
     set_transition_velocity(velocity);
+  }
+
+  SimTK::Vec3 ConveyorBeltForce::getConveyorForceDirection() const
+  {
+    return get_conveyor_force_direction();
+  }
+
+  void ConveyorBeltForce::setConveyorForceDirection(SimTK::Vec3 direction)
+  {
+    set_conveyor_force_direction(direction);
   }
   
   /* The following set of functions are introduced for convenience to get/set values in ConveyorBeltForce::ContactParameters

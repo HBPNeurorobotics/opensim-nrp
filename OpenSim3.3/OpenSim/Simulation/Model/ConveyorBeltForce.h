@@ -52,6 +52,7 @@ namespace SimTK{
     const ContactSetIndex set;
     std::map<ContactSurfaceIndex, Parameters> parameters;
     Real transitionVelocity;
+	Vec3 conveyorForceDirection;
     mutable CacheEntryIndex energyCacheIndex;
 
   public:
@@ -106,6 +107,14 @@ namespace SimTK{
       //updImpl().transitionVelocity = v;
       static_cast<ConveyorBeltForceImpl&>(updImplementation()).transitionVelocity = v;
     }
+
+    Vec3 getConveyorForceDirection() /*const*/ {
+      return static_cast<ConveyorBeltForceImpl&>(updImplementation()).conveyorForceDirection;
+    }
+
+    void setConveyorForceDirection(Vec3 d) {
+      static_cast<ConveyorBeltForceImpl&>(updImplementation()).conveyorForceDirection = d;
+    }
   };  
 
 
@@ -141,6 +150,8 @@ namespace OpenSim {
 			     "Material properties.");
     OpenSim_DECLARE_PROPERTY(transition_velocity, double,
 			     "Slip velocity (creep) at which peak static friction occurs.");
+    OpenSim_DECLARE_PROPERTY(conveyor_force_direction, SimTK::Vec3,
+			     "Direction of the force that is applied to colliding objects.");
     /**@}**/
 
 
@@ -167,6 +178,14 @@ namespace OpenSim {
      * Set the transition velocity for switching between static and dynamic friction.
      */
     void setTransitionVelocity(double velocity);
+    /**
+     * Get the transition velocity for switching between static and dynamic friction.
+     */
+    SimTK::Vec3 getConveyorForceDirection() const;
+    /**
+     * Set the transition velocity for switching between static and dynamic friction.
+     */
+    void setConveyorForceDirection(SimTK::Vec3 direction);
 
     /**
      * Access to ContactParameters. Methods assume size 1 of ContactParametersSet and add one ContactParameter if needed
