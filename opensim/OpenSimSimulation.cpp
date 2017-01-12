@@ -158,11 +158,11 @@ void OpenSimSimulation::Init()
 		
 		// pos/vel
 		unsigned int posVelSize = isi.getQ().size();
-		std::string logWarning = "";
+		std::stringstream logWarning("");
 		if (isi.getQ().size() != isi.getU().size())
 		{
-			logWarning = "WARNING, size of Q (position) and U (velocities) vectors are not the same, which should not happen. Mistakes in logging could have happened.";
-			std::cout << logWarning << std::endl;
+			logWarning << "WARNING, size of Q (position, size = "<< isi.getQ().size() <<") and U (velocities, size = "<< isi.getU().size() <<") vectors are not the same. Mistakes in logging could have happened. Everything should be fine, but take results with grain of salt.";
+			std::cout << logWarning.str() << std::endl;
 			posVelSize = std::min( isi.getQ().size(), isi.getU().size() );
 		}
 		for (unsigned int u=0; u < posVelSize; u++)
@@ -177,7 +177,7 @@ void OpenSimSimulation::Init()
 				tmpStr << u;
 		
 				logger->newLogger(posvel_id, "position_and_velocity_" + tmpStr.str(),
-					"# OpenSim/Simbody dynamics data log file\n# logged data from the Q (position) and U (velocities) vectors, entries number "+tmpStr.str()+" "+logWarning+"\n# data columns in this file:\n# time - position - velocity \n");
+					"# OpenSim/Simbody dynamics data log file\n# logged data from the Q (position) and U (velocities) vectors, entries number "+tmpStr.str()+" "+logWarning.str()+"\n# data columns in this file:\n# time - position - velocity \n");
 				
 			}
 		}
@@ -456,7 +456,7 @@ void OpenSimSimulation::Step()
     //std::cout << "State: " << ws.toString() << std::endl;
 	
 	// current positions are currently not logged, right now
-    /* std::cout << "current Q (pos): " << ws.getQ() << std::endl;
+    /*std::cout << "current Q (pos): " << ws.getQ() << std::endl;
     std::cout << "current U (vel): " << ws.getU() << std::endl;
     std::cout << "current Z (aux): " << ws.getZ() << std::endl; */
     
@@ -471,7 +471,7 @@ void OpenSimSimulation::Step()
       std::cout << "new Q (pos): " << istate.getQ() << std::endl;
       std::cout << "new U (vel): " << istate.getU() << std::endl;
       std::cout << "new Z (aux): " << istate.getZ() << std::endl;
-	  unsigned int posVelSize = std::min( istate.getQ().size(), istate.getU().size() ); // just in case, those should always be the same, unless there is an object that has a position but no velocity or vice versa
+	  unsigned int posVelSize = std::min( istate.getQ().size(), istate.getU().size() ); // it's possible for an object to have a position but no velocity
 	  for (unsigned int u=0; u < posVelSize; u++)
 	  {
 		if (logger)

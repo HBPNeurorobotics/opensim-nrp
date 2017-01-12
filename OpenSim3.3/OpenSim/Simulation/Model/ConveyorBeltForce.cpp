@@ -73,7 +73,7 @@ namespace SimTK{
   (const State& state, Vector_<SpatialVec>& bodyForces, 
    Vector_<Vec3>& particleForces, Vector& mobilityForces) const 
   {
-    
+    conveyorForceNotAddedThisStep = true;
     
     const Array_<Contact>& contacts = subsystem.getContacts(state, set);
     Real& pe = Value<Real>::downcast
@@ -122,6 +122,7 @@ namespace SimTK{
 
     // Loop over all the springs, and evaluate the force from each one.
 
+	bool oneInside = false;
     for (std::set<int>::const_iterator iter = insideFaces.begin(); 
 	 iter != insideFaces.end(); ++iter) {
       int face = *iter;
@@ -129,7 +130,9 @@ namespace SimTK{
       bool inside;
       Vec3 nearestPoint = otherObject.findNearestPoint(t12*param.springPosition[face], inside, normal);
       if (!inside)
-	continue;
+	  {
+		  continue;
+	  }
         
       // Find how much the spring is displaced.
         
@@ -138,9 +141,13 @@ namespace SimTK{
       const Vec3 displacement = nearestPoint-springPosInGround;
       const Real distance = displacement.norm();
       if (distance == 0.0)
-	continue;
+	  {
+		  continue;
+	  }
       const Vec3 forceDir = displacement/distance;
         
+	  oneInside = true;  // apply the conveyor force only if there is at least one point in contact
+	  
       // Calculate the relative velocity of the two bodies at the contact point.
         
       const Vec3 station1 = body1.findStationAtGroundPoint(state, nearestPoint);
@@ -169,12 +176,23 @@ namespace SimTK{
 	force += ffriction*vtangent/vslip;
       }
 
-      force +=  conveyorForceDirection;
+      //force +=  conveyorForceDirection;
 	  //std::cout << "conveyorForceDirection: " << conveyorForceDirection << std::endl;
 
       body1.applyForceToBodyPoint(state, station1, force, bodyForces);
       body2.applyForceToBodyPoint(state, station2, -force, bodyForces);
       pe += param.stiffness*area*displacement.normSqr()/2;
+    }
+	
+    if (conveyorForceNotAddedThisStep && oneInside)
+    {
+		std::cout << "Adding conveyor force." << std::endl;
+      SpatialVec convForce;
+      convForce[0] = Vec3(0,0,0);
+      convForce[1] = conveyorForceDirection;
+      body1.applyBodyForce(state , convForce , bodyForces);
+      body2.applyBodyForce(state , convForce , bodyForces);
+	  conveyorForceNotAddedThisStep = false;
     }
   }
 

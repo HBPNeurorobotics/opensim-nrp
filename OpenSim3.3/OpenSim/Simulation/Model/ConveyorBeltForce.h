@@ -54,6 +54,7 @@ namespace SimTK{
     Real transitionVelocity;
 	Vec3 conveyorForceDirection;
     mutable CacheEntryIndex energyCacheIndex;
+	mutable bool conveyorForceNotAddedThisStep;
 
   public:
     
