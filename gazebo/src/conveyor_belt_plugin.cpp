@@ -22,6 +22,8 @@
 #include <gazebo/transport/Node.hh>
 #include <gazebo/transport/Publisher.hh>
 
+#include "SimulationLogger.h"
+
 using namespace gazebo;
 GZ_REGISTER_MODEL_PLUGIN(ConveyorBeltPlugin)
 
@@ -144,11 +146,18 @@ void ConveyorBeltPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
       physics::JointPtr joint = joints[k];
       std::ofstream log_stream;
       std::string log_file_name;
+      
+      std::stringstream data_log_stream;
+      
       if (jointTorqueLoggers.find(joint->GetName()) == jointTorqueLoggers.end())
       {
         log_file_name = this->logDirectory + "/JointData_" + joint->GetName() + ".log";
         // gzdbg << "  First time log for joint: " << log_file_name << "\n";
         jointTorqueLoggers.insert(std::make_pair(joint->GetName(), log_file_name));
+
+        std::string data_description("Dynamic data for kinematic joint " + joint->GetName());
+        m_logger->newLogger(joint->GetName(), log_file_name, data_description);
+
         log_stream.open(log_file_name, std::ios::out);
         if (log_stream.is_open())
         {
@@ -157,11 +166,19 @@ void ConveyorBeltPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
 #ifdef CONVEYOR_BELT_PLUGIN_GAZEBO_8_SUPPORT
           log_stream << this->world->SimTime().Double() << " " << wrench.body1Force.GetLength() << " " << wrench.body2Force.GetLength()
                      << " " << wrench.body1Torque.GetLength() << " " << wrench.body2Torque.GetLength() << "\n";
+                     
+          data_log_stream <<" " << wrench.body1Force.GetLength() << " " << wrench.body2Force.GetLength()
+                     << " " << wrench.body1Torque.GetLength() << " " << wrench.body2Torque.GetLength() << "\n";
 #else // CONVEYOR_BELT_PLUGIN_GAZEBO_8_SUPPORT
           log_stream << this->world->GetSimTime().Double() << " " << wrench.body1Force.GetLength() << " " << wrench.body2Force.GetLength()
                      << " " << wrench.body1Torque.GetLength() << " " << wrench.body2Torque.GetLength() << "\n";
+                     
+          data_log_stream << this->world->GetSimTime().Double() << " " << wrench.body1Force.GetLength() << " " << wrench.body2Force.GetLength()
+                     << " " << wrench.body1Torque.GetLength() << " " << wrench.body2Torque.GetLength() << "\n";
 #endif // CONVEYOR_BELT_PLUGIN_GAZEBO_8_SUPPORT
           log_stream.close();
+          
+          m_logger->logData(joint->GetName(), data_log_stream.str());
         }
       }
       else
@@ -176,11 +193,19 @@ void ConveyorBeltPlugin::OnUpdate(const common::UpdateInfo &/*_info*/)
 #ifdef CONVEYOR_BELT_PLUGIN_GAZEBO_8_SUPPORT
           log_stream << this->world->SimTime().Double() << " " << wrench.body1Force.GetLength() << " " << wrench.body2Force.GetLength()
                      << " " << wrench.body1Torque.GetLength() << " " << wrench.body2Torque.GetLength() << "\n";
+                     
+          data_log_stream <<" " << wrench.body1Force.GetLength() << " " << wrench.body2Force.GetLength()
+                     << " " << wrench.body1Torque.GetLength() << " " << wrench.body2Torque.GetLength() << "\n";
 #else // CONVEYOR_BELT_PLUGIN_GAZEBO_8_SUPPORT
           log_stream << this->world->GetSimTime().Double() << " " << wrench.body1Force.GetLength() << " " << wrench.body2Force.GetLength()
                      << " " << wrench.body1Torque.GetLength() << " " << wrench.body2Torque.GetLength() << "\n";
+                     
+          data_log_stream << this->world->GetSimTime().Double() << " " << wrench.body1Force.GetLength() << " " << wrench.body2Force.GetLength()
+                     << " " << wrench.body1Torque.GetLength() << " " << wrench.body2Torque.GetLength() << "\n";
 #endif // CONVEYOR_BELT_PLUGIN_GAZEBO_8_SUPPORT
           log_stream.close();
+          
+          m_logger->logData(joint->GetName(), data_log_stream.str());
         }
       }
     }
