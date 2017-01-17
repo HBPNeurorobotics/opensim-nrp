@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, isdir
 import psutil
-
-logDir = "/home/schenkebn/HBP/openSimLogs"
+from argparse import ArgumentParser
 
 logFileTypes = {
     "position_and_velocity_": "posVelLog",
@@ -13,8 +12,33 @@ logFileTypes = {
     "pin_data_and_mobilizer_reactions_": "pinMobReac",
     "rigid_body_forces_": "rigidForceLog",
     "force_set_": "forceSetLog",
-    "contact_": "contactLog"
+    "contact_": "contactLog",
+    "force_coord_CoordForce_": "coordForceLog",
+    "position_only_" : "posLog",
+    "velocity_only_" : "velLog"
 }
+
+
+parser = ArgumentParser()
+parser.add_argument("-in", "--log_directory",
+                  action="store", dest="inputDir", help="Directory which contains the logfile to process.")
+parser.add_argument("-out", "--image_directory",
+                  action="store", dest="outputDir", help="Directory for the created images.")
+
+args = parser.parse_args()
+
+logDir = args.inputDir
+outDir = args.outputDir
+
+if (logDir is None) or (not isdir(logDir)):
+    print("\nNo valid log directory provided.\n")
+    parser.print_help()
+    exit()
+
+if (outDir is None) or not isdir(outDir):
+    print("\nNo valid output directory provided.\n")
+    parser.print_help()
+    exit()
 
 gnuplotGeneralSettings = 'set key;' \
                          'set term png size 1200,800;'
@@ -33,9 +57,12 @@ pointType = "2"
 
 gnuplotMaxTime = 120
 
-def executeGnuplot(filename, gnuplotCommands, title='', outfileSuffix = ''):
+def executeGnuplot(filename, gnuplotCommands, title='', outfileSuffix = '', fixColon=True):
         #outfile = filename.replace('.log','.png')
+
         outfile = filename[:len(filename)-4] + outfileSuffix + '.png'
+        if (fixColon):
+            outfile = outfile.replace("::","__")
 
         print("Creating {0}".format(outfile))
 
@@ -43,7 +70,7 @@ def executeGnuplot(filename, gnuplotCommands, title='', outfileSuffix = ''):
         if title != '':
             gnuplotTitle = 'set title "' + title + ' ('+filename+')" noenhanced;'
 
-        gnuplotOutput = 'set out "' + join(logDir, outfile) + '";'
+        gnuplotOutput = 'set out "' + join(outDir, outfile) + '";'
 
         try:
             #p1 = psutil.Popen([join(logDir, "gnuplot"),gnuplotString],env=env_main,stdout=outf)
@@ -58,6 +85,8 @@ def executeGnuplot(filename, gnuplotCommands, title='', outfileSuffix = ''):
 
 
 def generateImage(type, filename):
+
+    print("Generating image for log of type {}".format(type))
 
     # check if there is anything in the file except comment lines
     lgFile = open(join(logDir, filename),'r')
@@ -87,8 +116,34 @@ def generateImage(type, filename):
 
         executeGnuplot(filename, gnuplotCommandString, "Object position and velocity")
 
+    elif type == "posLog":
+        # OpenSim/Simbody dynamics data log file
+        # logged data from the Q (position) vector, entry number 1
+        # data columns in this file:
+        # time - position
+
+        gnuplotCommandString = 'plot' + dataRangesString + ' '\
+                         + dataFileString + ' using 1:2 w p pt ' + pointType  + ' ps ' + pointSize + ' lc rgb "red" title "position", ' \
+                         + dataFileString + ' using 1:2 w l lw ' + curveWidth + ' lc rgb "red" notitle, ' \
+                         ';'
+
+        executeGnuplot(filename, gnuplotCommandString, "Object position")
+
+    elif type == "velLog":
+        # OpenSim/Simbody dynamics data log file
+        # logged data from the U (velocities) vector, entry number 1
+        # data columns in this file:
+        # time - velocity
+
+        gnuplotCommandString = 'plot' + dataRangesString + ' '\
+                         + dataFileString + ' using 1:2 w p pt ' + pointType  + ' ps ' + pointSize + ' lc rgb "green" title "velocity", ' \
+                         + dataFileString + ' using 1:2 w l lw ' + curveWidth + ' lc rgb "green" notitle ' \
+                         ';'
+
+        executeGnuplot(filename, gnuplotCommandString, "Object velocity")
+
     elif type == "auxLog":
-        print("auxLog-image")
+        print("auxLog-image output not implemented")
 
     elif type ==  "velAccLog":
         # OpenSim/Simbody dynamics data log file
@@ -234,7 +289,7 @@ def generateImage(type, filename):
         if (len(lgLine) == 0):
             print("ERROR: Could not create images for {0} because the line containing the"
                   " force labels could not be found (needs to start with '# time',"
-                  " followed by the labels separeated with '-')".format(filename))
+                  " followed by the labels separated with '-')".format(filename))
             return
 
         curveColors = ['red','green','blue']
@@ -325,23 +380,136 @@ def generateImage(type, filename):
             executeGnuplot(filename, gnuplotCommandString, "Contact normal (face #"+face+")","_face_"+face+"_normal")
 
 
+    elif type == "coordForceLog":
+        # OpenSim/Simbody dynamics data log file
+        # logged data from force named sacroiliac_pin_joint_limit
+        # data columns in this file:
+        # time - coordinate limit force
+
+        gnuplotCommandString = 'plot' + dataRangesString + ' '\
+                         + dataFileString + ' using 1:2 w p pt ' + pointType  + ' ps ' + pointSize + ' lc rgb "red" title "coordinate limit force", ' \
+                         + dataFileString + ' using 1:2 w l lw ' + curveWidth + ' lc rgb "red" notitle, ' \
+                         ';'
+
+        executeGnuplot(filename, gnuplotCommandString, "Coordinate limit force")
+
+    elif type == "dontDoAnything":
+        print("Don't do anything for file {0}".format(filename))
+
+    elif type == "Unknown":
+        print("Unknown log file type: {0}\nCreating generic images.".format(filename))
+
+        # We don't know how many data columns there will be, so we just draw plots which contain a maximum of three
+        # curves until we have drawn all the data.
+
+        # determine how many data columns there are
+        lgFile = open(join(logDir, filename),'r')
+        lgLine = lgFile.readline().strip()
+        while (len(lgLine) > 0) and not ((lgLine[0]).isdigit()):
+            lgLine = lgFile.readline().strip()
+        lgFile.close()
+
+        if (len(lgLine) == 0):
+            print("ERROR: Could not create images for {0} because there is no data".format(filename))
+            return
+
+        curveColors = ['red','green','blue']
+
+        columnsTmp = lgLine.split(' ')
+        columns = []
+        for tmp in columnsTmp:
+            if len(tmp) > 0:
+                columns.append(tmp)
+        columns = columns[1:] # the first element is the time, which does not get it's own diagram
+
+        print("Found {0} data columns (not counting the time column)".format(len(columns)))
+        currentDataColumn = 2
+
+        # draw diagrams for every for data column
+        gnuplotCommandString = 'plot' + dataRangesString + ' '
+        curveCount = 0
+        for column in columns:
+            gnuplotCommandString = gnuplotCommandString\
+                                   + dataFileString + ' using 1:'+str(currentDataColumn)+' w p pt ' + pointType  + ' ps ' + pointSize + ' lc rgb "'+curveColors[curveCount]+'" title "data column #'+str(currentDataColumn)+'" noenhance, ' \
+                                   + dataFileString + ' using 1:'+str(currentDataColumn)+' w l lw ' + curveWidth + ' lc rgb "'+curveColors[curveCount]+'" notitle, ' \
+
+            currentDataColumn = currentDataColumn + 1
+            curveCount = curveCount + 1
+
+            if (curveCount == 3):
+                gnuplotCommandString = gnuplotCommandString[:len(gnuplotCommandString)-2] + ';'
+                #print(gnuplotCommandString)
+                executeGnuplot(filename, gnuplotCommandString, "Data diagram","_data_{0}_to_{1}".format(currentDataColumn-3-1,currentDataColumn-2))
+                gnuplotCommandString = 'plot' + dataRangesString + ' '
+                curveCount = 0
+
+        # if the number of force labels is not divisible by three, draw the remaining curves
+        if (curveCount != 0):
+                #print(gnuplotCommandString)
+                executeGnuplot(filename, gnuplotCommandString, "Data diagram","_data_{0}_to_{1}".format(currentDataColumn-curveCount-1,currentDataColumn-2))
 
 
-    else:
-        print("ERROR: Unknown log file type")
+    elif type == "UnknownSingle":
+        print("Unknown log file type: {0}\nCreating generic images with a single image per data column.".format(filename))
 
+        # We don't know how many data columns there will be, so we just draw plots which contain a maximum of three
+        # curves until we have drawn all the data.
 
+        # determine how many data columns there are
+        lgFile = open(join(logDir, filename),'r')
+        lgLine = lgFile.readline().strip()
+        while (len(lgLine) > 0) and not ((lgLine[0]).isdigit()):
+            lgLine = lgFile.readline().strip()
+        lgFile.close()
+
+        if (len(lgLine) == 0):
+            print("ERROR: Could not create images for {0} because there is no data".format(filename))
+            return
+
+        curveColors = ['red','green','blue']
+
+        columnsTmp = lgLine.split(' ')
+        columns = []
+        for tmp in columnsTmp:
+            if len(tmp) > 0:
+                columns.append(tmp)
+        columns = columns[1:] # the first element is the time, which does not get it's own diagram
+
+        print("Found {0} data columns (not counting the time column)".format(len(columns)))
+        currentDataColumn = 2
+
+        # draw diagrams for every for data column
+        gnuplotCommandString = 'plot' + dataRangesString + ' '
+        curveCount = 0
+        for column in columns:
+            gnuplotCommandString = 'plot' + dataRangesString + ' '\
+                                   + dataFileString + ' using 1:'+str(currentDataColumn)+' w p pt ' + pointType  + ' ps ' + pointSize + ' lc rgb "'+curveColors[curveCount]+'" title "data column #'+str(currentDataColumn-1)+'" noenhance, ' \
+                                   + dataFileString + ' using 1:'+str(currentDataColumn)+' w l lw ' + curveWidth + ' lc rgb "'+curveColors[curveCount]+'" notitle, ' \
+                                    ';'
+
+            executeGnuplot(filename, gnuplotCommandString, "Data diagram","_data_{0}".format(currentDataColumn-1))
+
+            currentDataColumn = currentDataColumn + 1
 
 
 #logFiles = [f for f in listdir(logDir) if ( isfile(join(logDir, f)) and (f.find(".log",len(f)-4,len(f)) != -1) )]
 logFiles = [f for f in listdir(logDir) if ( isfile(join(logDir, f)) and (f.endswith(".log")) )]
 
-for logType in logFileTypes:
-    print(logFileTypes[logType])
-    for logFile in logFiles:
+# for logType in logFileTypes:
+#     print(logFileTypes[logType])
+#     for logFile in logFiles:
+#         if (logFile.find(logType,0) == 0):
+#             #print(logFile)
+#             generateImage(logFileTypes[logType], logFile)
+
+for logFile in logFiles:
+    knownType = False
+    for logType in logFileTypes:
         if (logFile.find(logType,0) == 0):
             #print(logFile)
+            knownType = True
             generateImage(logFileTypes[logType], logFile)
-
-    print
+    if not knownType:
+        generateImage("UnknownSingle", logFile)
+        asd=0
 
