@@ -36,6 +36,8 @@
 #define SIDE_CONTACT_PLUGIN_GAZEBO_8_SUPPORT
 #endif
 
+#include "SimulationLogger.h"
+
 namespace gazebo
 {
   /// \brief A plugin for a model with a contact sensor that only monitors
@@ -143,6 +145,8 @@ namespace gazebo
     protected: bool m_loggingActive;
 
     protected: std::map<std::string, std::string> contactForceLoggers;
+
+    protected: SimulationLogger* m_logger;
 
     protected: ros::NodeHandlePtr m_nh;
     protected: ros::Subscriber m_loggingSub;

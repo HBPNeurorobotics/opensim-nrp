@@ -104,21 +104,21 @@ void OpenSimSimulation::Init()
       osimManager = new OpenSim::Manager(*osimModel); 
 	  
       //////////////
-      const OpenSim::JointSet& joints = osimModel->getJointSet();
+      /*const OpenSim::JointSet& joints = osimModel->getJointSet();
       int numJoints = osimModel->getNumJoints();
 
-      /* OpenSim::Array< std::string > jointNames;
+      OpenSim::Array< std::string > jointNames;
       
       std::cout << "joint ranges: " << std::endl;
       for (int u = 0; u < numJoints; u++)
-	{
-	  OpenSim::Joint *joint = &(joints[u]);	  
-	  jointNames.append(joint->getName());
-	    
-	  OpenSim::CoordinateSet jointCoordinates = joint->getCoordinateSet();
-	  OpenSim::Coordinate coordinate = jointCoordinates[0];
-	  std::cout << coordinate.getRangeMin() << ", " << coordinate.getRangeMax()  << " --- " ;
-	}
+      {
+          OpenSim::Joint *joint = &(joints[u]);
+          jointNames.append(joint->getName());
+
+          OpenSim::CoordinateSet jointCoordinates = joint->getCoordinateSet();
+          OpenSim::Coordinate coordinate = jointCoordinates[0];
+          std::cout << coordinate.getRangeMin() << ", " << coordinate.getRangeMax()  << " --- " ;
+      }
       std::cout << std::endl; */
 
       ////
@@ -126,10 +126,10 @@ void OpenSimSimulation::Init()
 
       std::cout << "constraints: " << std::endl;
       for (int u = 0; u < constraints.getSize(); u++)
-	{
-	  OpenSim::Constraint *constraint = &(constraints[u]);
-	  std::cout << constraint->getName() << "--- " ;
-	}
+      {
+          OpenSim::Constraint *constraint = &(constraints[u]);
+          std::cout << constraint->getName() << "--- " ;
+      }
       std::cout << std::endl;
 
       //// 

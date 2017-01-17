@@ -21,6 +21,8 @@
 #include "side_contact_plugin.h"
 #include <ignition/math/Vector3.hh>
 
+#include "SimulationLogger.h"
+
 using namespace gazebo;
 //GZ_REGISTER_MODEL_PLUGIN(SideContactPlugin)
 
@@ -149,12 +151,17 @@ void SideContactPlugin::Init()
   std::string topic_name = "/" + model->GetName() + "/cmd_logging";
   m_loggingSub = m_nh->subscribe<std_msgs::Bool>(topic_name, 1,
                                      boost::bind(&SideContactPlugin::OnLoggingCommand, this, _1));
+
+  m_logger = new SimulationLogger(this->logDirectory);
 }
 
 void SideContactPlugin::Fini()
 {
   m_loggingSub.shutdown();
   m_nh->shutdown();
+
+  delete m_logger;
+  m_logger = NULL;
 }
 
 void SideContactPlugin::OnLoggingCommand(const std_msgs::Bool::ConstPtr& _msg)
@@ -292,12 +299,18 @@ void SideContactPlugin::LogContactData()
       std::string collision_pair_id = ct_data.collision1() + "_" + ct_data.collision2();
       std::string log_file_name;
       std::ofstream log_stream;
+
+      std::stringstream data_log_stream;
+
       bool open_append = true;
       if (contactForceLoggers.find(collision_pair_id) == contactForceLoggers.end())
       {
         log_file_name = this->logDirectory + "/ContactData_" + collision_pair_id;
         open_append = false;
         contactForceLoggers.insert(std::make_pair(collision_pair_id, log_file_name));
+
+        std::string data_description("Contact point data for " + collision_pair_id);
+        m_logger->newLogger(collision_pair_id, log_file_name, data_description);
       }
       else
       {
@@ -329,12 +342,17 @@ void SideContactPlugin::LogContactData()
 
 #ifdef SIDE_CONTACT_PLUGIN_GAZEBO_8_SUPPORT
               log_stream << this->world->SimTime().Double() << " " << ct_data.depth(l) << " " << b1_f.Length() << " " << b2_f.Length() << " " << b1_t.Length() << " " << b2_t.Length() << "\n";
+              data_log_stream << << this->world->SimTime().Double() << " " << ct_data.depth(l) << " " << b1_f.Length() << " " << b2_f.Length() << " " << b1_t.Length() << " " << b2_t.Length() << "\n";
 #else // SIDE_CONTACT_PLUGIN_GAZEBO_8_SUPPORT
               log_stream << this->world->GetSimTime().Double() << " " << ct_data.depth(l) << " " << b1_f.Length() << " " << b2_f.Length() << " " << b1_t.Length() << " " << b2_t.Length() << "\n";
+              data_log_stream << this->world->GetSimTime().Double() << " " << ct_data.depth(l) << " " << b1_f.Length() << " " << b2_f.Length() << " " << b1_t.Length() << " " << b2_t.Length() << "\n";
 #endif // SIDE_CONTACT_PLUGIN_GAZEBO_8_SUPPORT
-              // log_stream << this->world->SimTime().Double() << " " << b1_f.Length() << " " << b2_f.Length() << " " << b1_t.Length() << " " << b2_t.Length() << "\n";
+
+              m_logger->logData(collision_pair_id, data_log_stream.str());
 
               log_stream.close();
+
+
           }
         }
       }
