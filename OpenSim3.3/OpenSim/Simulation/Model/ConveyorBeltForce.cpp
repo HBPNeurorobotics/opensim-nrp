@@ -34,7 +34,7 @@ namespace SimTK{
 
   ConveyorBeltForceImpl::ConveyorBeltForceImpl
   (GeneralContactSubsystem& subsystem, ContactSetIndex set) : 
-    subsystem(subsystem), set(set), transitionVelocity(Real(0.01)), conveyorForceDirection(Vec3(0,0,0)) {
+    subsystem(subsystem), set(set), transitionVelocity(Real(0.01)), conveyorForceDirection(Vec3(0,0,0)), conveyorForceNotAddedThisStep(true), conveyorIntersectionHappened(false) {
     
   }
 
@@ -186,13 +186,17 @@ namespace SimTK{
 	
     if (conveyorForceNotAddedThisStep && oneInside)
     {
-		std::cout << "Adding conveyor force." << std::endl;
+	  //std::cout << "Adding conveyor force. t = " << state.getTime() << std::endl;
       SpatialVec convForce;
       convForce[0] = Vec3(0,0,0);
       convForce[1] = conveyorForceDirection;
-      body1.applyBodyForce(state , convForce , bodyForces);
-      body2.applyBodyForce(state , convForce , bodyForces);
+      //body1.applyBodyForce(state , convForce , bodyForces);
+      //body2.applyBodyForce(state , convForce , bodyForces);
+	  // void 	setUToFitLinearVelocity (State &state, const Vec3 &v_FM) const 
+	  //body1.setUToFitLinearVelocity(state, conveyorForceDirection); // this does not work because the system is in the wrong stage for this
+	  //body2.setUToFitLinearVelocity(state, conveyorForceDirection); // (const-casting the state just causes a crash)
 	  conveyorForceNotAddedThisStep = false;
+	  conveyorIntersectionHappened = true;
     }
   }
 
@@ -307,6 +311,16 @@ namespace OpenSim {
   void ConveyorBeltForce::setConveyorForceDirection(SimTK::Vec3 direction)
   {
     set_conveyor_force_direction(direction);
+  }
+
+  bool ConveyorBeltForce::getConveyorIntersectionHappened() const
+  {
+    return get_conveyor_intersection_happened();
+  }
+
+  void ConveyorBeltForce::setConveyorIntersectionHappened(bool happened)
+  {
+    set_conveyor_intersection_happened(happened);
   }
   
   /* The following set of functions are introduced for convenience to get/set values in ConveyorBeltForce::ContactParameters

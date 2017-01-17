@@ -55,6 +55,7 @@ namespace SimTK{
 	Vec3 conveyorForceDirection;
     mutable CacheEntryIndex energyCacheIndex;
 	mutable bool conveyorForceNotAddedThisStep;
+	mutable bool conveyorIntersectionHappened;
 
   public:
     
@@ -116,6 +117,14 @@ namespace SimTK{
     void setConveyorForceDirection(Vec3 d) {
       static_cast<ConveyorBeltForceImpl&>(updImplementation()).conveyorForceDirection = d;
     }
+
+    bool getConveyorIntersectionHappened() /*const*/ {
+      return static_cast<ConveyorBeltForceImpl&>(updImplementation()).conveyorIntersectionHappened;
+    }
+
+    void setConveyorIntersectionHappened(bool h) {
+      static_cast<ConveyorBeltForceImpl&>(updImplementation()).conveyorIntersectionHappened = h;
+    }
   };  
 
 
@@ -153,6 +162,8 @@ namespace OpenSim {
 			     "Slip velocity (creep) at which peak static friction occurs.");
     OpenSim_DECLARE_PROPERTY(conveyor_force_direction, SimTK::Vec3,
 			     "Direction of the force that is applied to colliding objects.");
+    OpenSim_DECLARE_PROPERTY(conveyor_intersection_happened, bool,
+			     "Don't touch this.");
     /**@}**/
 
 
@@ -180,13 +191,21 @@ namespace OpenSim {
      */
     void setTransitionVelocity(double velocity);
     /**
-     * Get the transition velocity for switching between static and dynamic friction.
+     * 
      */
     SimTK::Vec3 getConveyorForceDirection() const;
     /**
-     * Set the transition velocity for switching between static and dynamic friction.
+     * 
      */
     void setConveyorForceDirection(SimTK::Vec3 direction);
+    /**
+     * 
+     */
+    bool getConveyorIntersectionHappened() const;
+    /**
+     * 
+     */
+    void setConveyorIntersectionHappened(bool happened);
 
     /**
      * Access to ContactParameters. Methods assume size 1 of ContactParametersSet and add one ContactParameter if needed
