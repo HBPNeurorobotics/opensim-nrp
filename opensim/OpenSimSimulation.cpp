@@ -182,6 +182,43 @@ void OpenSimSimulation::Init()
 			}
 		}
 		
+		//Q (pos)
+		//U (vel)
+		unsigned int posSize = isi.getQ().size();		
+		for (unsigned int u=0; u < posSize; u++)
+		{
+			std::string pos_id;
+			{
+				std::stringstream tmpStr;
+				tmpStr << "Pos_" << u;
+				pos_id = tmpStr.str();
+				
+				tmpStr.str("");
+				tmpStr << u;
+		
+				logger->newLogger(pos_id, "position_only_" + tmpStr.str(),
+					"# OpenSim/Simbody dynamics data log file\n# logged data from the Q (position) vector, entry number "+tmpStr.str()+"\n# data columns in this file:\n# time - position\n");
+				
+			}
+		}
+		
+		unsigned int velSize = isi.getU().size();
+		for (unsigned int u=0; u < velSize; u++)
+		{
+			std::string vel_id;
+			{
+				std::stringstream tmpStr;
+				tmpStr << "Vel_" << u;
+				vel_id = tmpStr.str();
+				
+				tmpStr.str("");
+				tmpStr << u;
+		
+				logger->newLogger(vel_id, "velocity_only_" + tmpStr.str(),
+					"# OpenSim/Simbody dynamics data log file\n# logged data from the U (velocities) vector, entry number "+tmpStr.str()+"\n# data columns in this file:\n# time - velocity \n");
+			}
+		}
+		
 		// aux
 		if (isi.getZ().size() > 0) // there are not always auxiliary variables in a system
 		{
@@ -227,6 +264,16 @@ void OpenSimSimulation::Init()
 					
 					logger->newLogger(mobod_add_id, "pin_data_and_mobilizer_reactions_" + mobod_id,
 					  "# OpenSim/Simbody dynamics data log file\n# logged data from "+mobod_id+"\n# data columns in this file:\n# time - pin angle - pin rate - reaction on body at mobilizer frame (moment and force) - reaction on parent at mobilizer frame (moment and force) \n");
+					  
+					std::string mobod_moment_id;
+					{
+					  std::stringstream tmpStr;
+					  tmpStr << "Mobod_Moment_" << k;
+					  mobod_moment_id = tmpStr.str();
+					}
+					
+					logger->newLogger(mobod_moment_id, "mobilizer_moments_" + mobod_id,
+					  "# OpenSim/Simbody dynamics data log file\n# logged data from "+mobod_id+"\n# data columns in this file:\n# time - momentum (angular, linear) measured and expressed in Ground, but taken about the body origin - momentum (angular, linear) measured and expressed in Ground, but taken about the body mass center \n");
 				}
 			}
 			catch (SimTK::Exception::CacheEntryOutOfDate& ex)
@@ -298,6 +345,20 @@ void OpenSimSimulation::Init()
 			
 			logger->newLogger(force_id, "force_set_" + force_id,
 			  "# OpenSim/Simbody dynamics data log file\n# logged data from force named "+forceName+"\n# data columns in this file:\n# time"+tmpStr.str()+"\n");
+			  
+			if (force->getConcreteClassName().compare("CoordinateLimitForce") == 0) // not great, but works
+			{
+				OpenSim::CoordinateLimitForce* osimCoordLimForce = static_cast<OpenSim::CoordinateLimitForce*>(force);
+			
+				std::stringstream tmpStr;
+				tmpStr << "CoordForce_" << force->getName();
+				std::string coord_force_id = tmpStr.str();
+				
+				tmpStr.str("");
+				
+				logger->newLogger(coord_force_id, "force_coord_" + coord_force_id,
+				  "# OpenSim/Simbody dynamics data log file\n# logged data from force named "+forceName+"\n# data columns in this file:\n# time - coordinate limit force\n");			
+			}
 		}
 		
 		
@@ -441,7 +502,7 @@ void OpenSimSimulation::Step()
   std::cout << "Integrate OpenSim from " << currentTime << " to " << (currentTime + timeStep) << std::endl;
 
   try
-  {
+  {	  
     osimManager->setInitialTime(currentTime);
     osimManager->setFinalTime(osimManager->getInitialTime() + timeStep);
 
@@ -452,6 +513,86 @@ void OpenSimSimulation::Step()
       std::cout << "Result: " << initial_state << std::endl;
     }
     SimTK::State& ws = osimModel->updWorkingState();
+    const SimTK::State& ws_const = osimModel->getWorkingState();
+	
+	// aaaaaaa
+	{
+	  const OpenSim::ForceSet& forces = osimModel->getForceSet();
+	  
+      for (int u = 0; u < forces.getSize(); u++)
+      {
+        OpenSim::Force *force = &(forces[u]);        
+
+		std::cout << "name " << force->getName() << " of class " << force->getConcreteClassName() << std::endl;
+        SimTK::ForceIndex force_idx = force->getForceIndex();
+        const SimTK::Force& simTkForce = osimModel->getForceSubsystem().getForce(force_idx);
+        //if (SimTK::ConveyorBeltForce::isInstanceOf(simTkForce))
+        //if (SimTK::ConveyorBeltForce::isA(simTkForce))
+		if (force->getConcreteClassName().compare("ConveyorBeltForce") == 0) // not great, but works
+        {
+			SimTK::Force& nonConstForce = const_cast<SimTK::Force&>(simTkForce);
+			SimTK::ConveyorBeltForce* cbf = static_cast<SimTK::ConveyorBeltForce*>(&nonConstForce);
+          //SimTK::ConveyorBeltForce* cbf = const_cast<SimTK::ConveyorBeltForce*>( (const SimTK::ConveyorBeltForce*)(&simTkForce) );
+		  
+			if (cbf->getConveyorIntersectionHappened())
+			{	
+				std::cout << "last step, an intersection happened" << std::endl;
+				cbf->setConveyorIntersectionHappened(false);
+				
+				const SimTK::MobilizedBody* mb = NULL;
+				
+				OpenSim::ConveyorBeltForce* osimConvForce = static_cast<OpenSim::ConveyorBeltForce*>(force);
+				if (osimConvForce)
+				{
+					const OpenSim::ConveyorBeltForce::ContactParameters& params = osimConvForce->getContactParametersSet()[0];
+					
+					const OpenSim::Property<std::string>& geometries = params.getGeometry();
+					
+					const OpenSim::ContactGeometrySet& contactGeometries = osimModel->getContactGeometrySet();
+					int numContactGeometries = osimModel->getNumContactGeometries();
+					
+					for (unsigned int r = 0; r < numContactGeometries; r++)
+					{
+						OpenSim::ContactGeometry& cG = contactGeometries.get(r);
+						/* std::cout << "contactGeometries["<<r<<"] body name: " << cG.getBodyName() << std::endl;
+						std::cout << "contactGeometries["<<r<<"]      name: " << cG.getName() << std::endl; */
+						
+						for (unsigned int g = 0; g < geometries.size(); g++)
+						{
+							std::string propertyString = geometries[g];
+							/* std::cout << "geometries: " << propertyString << std::endl; */
+							if (propertyString.compare(cG.getName()) == 0)
+							{
+								//const SimTK::MobilizedBody& mb = osimModel->getMatterSubsystem().getMobilizedBody(mbi);
+								
+								const SimTK::MobilizedBody& mobody = osimModel->getMatterSubsystem().getMobilizedBody(cG.getBody().getIndex());
+								//SimTK::State& stt = osimModel->updWorkingState();
+								SimTK::Vec3 vel = cbf->getConveyorForceDirection(); // Yes, I'm using something called 'force' as a velocity. Don't question it.
+								
+								std::cout << "Setting velocity corresponding to " << cG.getName() << " to " << vel << std::endl;
+								
+								mobody.setUToFitLinearVelocity(ws,vel);
+							}
+						}
+					}
+				}
+				
+				/* const SimTK::GeneralContactSubsystem& contactSystem = osimModel->getMultibodySystem().getContactSubsystem();
+				int contactSetsCount = contactSystem.getNumContactSets();
+				
+				for (int k = 0; k < contactSetsCount; ++k)
+				{
+					SimTK::ContactSetIndex csi(k);
+					
+					SimTK::MobilizedBody mobody = contactSystem.getBody(k,propertyString);
+					
+				} */
+				
+			}
+        }
+      }
+	}
+	// hhhhhhh
     
     //std::cout << "State: " << ws.toString() << std::endl;
 	
@@ -489,6 +630,51 @@ void OpenSimSimulation::Step()
 					<< "\n";
 			  
 			  logger->logData(posvel_id,tmpStr.str());
+		  }
+		}
+	  }
+	  
+	  unsigned int posSize = istate.getQ().size();
+	  for (unsigned int u=0; u < posVelSize; u++)
+	  {
+		if (logger)
+		{
+		  std::string pos_id;
+		  {
+			  std::stringstream tmpStr;
+			  tmpStr << "Pos_" << u;
+			  pos_id = tmpStr.str();
+			  
+			  tmpStr.str("");
+			  
+			  tmpStr  << currentTime + timeStep
+					<< " " << istate.getQ()[u]
+					<< "\n";
+			  
+			  logger->logData(pos_id,tmpStr.str());
+		  }
+		}
+	  }
+	  
+	  
+	  unsigned int velSize = istate.getU().size();
+	  for (unsigned int u=0; u < velSize; u++)
+	  {
+		if (logger)
+		{
+		  std::string vel_id;
+		  {
+			  std::stringstream tmpStr;
+			  tmpStr << "Vel_" << u;
+			  vel_id = tmpStr.str();
+			  
+			  tmpStr.str("");
+			  
+			  tmpStr  << currentTime + timeStep
+					<< " " << istate.getU()[u]
+					<< "\n";
+			  
+			  logger->logData(vel_id,tmpStr.str());
 		  }
 		}
 	  }
@@ -600,6 +786,7 @@ void OpenSimSimulation::Step()
           {
 
             const SimTK::MobilizedBody& mb = osimModel->getMatterSubsystem().getMobilizedBody(mbi);
+            //SimTK::MobilizedBody& mb_notconst = osimModel->updMatterSubsystem().updMobilizedBody(mbi);
             const SimTK::SpatialVec& bta = mb.getBodyAcceleration(ws);
             const SimTK::SpatialVec& btv = mb.getBodyVelocity(ws);
             // const SimTK::Vec3& baa = mb.getBodyAngularAcceleration(ws);
@@ -612,9 +799,10 @@ void OpenSimSimulation::Step()
 			
 			SimTK::MobilizedBody::Pin* mbp = (static_cast<SimTK::MobilizedBody::Pin*>(&const_cast<SimTK::MobilizedBody&>(mb))); // this is possibly a crime
 			/*std::cout << "mbp->getAngle(ws): " << mbp->getAngle(ws) << std::endl;
-			std::cout << "mbp->getRate(ws) : " << mbp->getRate(ws) << std::endl;
+			std::cout << "mbp->getRate(ws) : " << mbp->getRate(ws) << std::endl;*/
+			//mbp->applyPinTorque(istate,0,osimModel->getMultibodySystem().updMobilityForces(istate, istate.getSystemStage())); // this does not change anything
 			//std::cout << "mbp->getAppliedPinTorque: " << mbp->getAppliedPinTorque(istate,osimModel->getMultibodySystem().getMobilityForces(istate, istate.getSystemStage())) << std::endl; // this either is useless or I'm not using it correctly
-			std::cout << "mb.getTauAsVector(ws): " << mb.getTauAsVector(ws) << std::endl;
+			/*std::cout << "mb.getTauAsVector(ws): " << mb.getTauAsVector(ws) << std::endl;
 			std::cout << "mb.findMobilizerReactionOnBodyAtMInGround(ws)       : " << mb.findMobilizerReactionOnBodyAtMInGround(ws) << std::endl;
 			std::cout << "mb.findMobilizerReactionOnBodyAtOriginInGround(ws)  : " << mb.findMobilizerReactionOnBodyAtOriginInGround(ws) << std::endl;
 			std::cout << "mb.findMobilizerReactionOnParentAtFInGround(ws)     : " << mb.findMobilizerReactionOnParentAtFInGround(ws) << std::endl;
@@ -623,8 +811,14 @@ void OpenSimSimulation::Step()
 			SimTK::Real pinAngle = mbp->getAngle(ws);
 			SimTK::Real pinRate = mbp->getRate(ws);
 			
+			//SpatialVec SimTK::MobilizedBody::findMobilizerReactionOnBodyAtMInGround 	( 	const State &  	state	) 	const
+			//SpatialVec SimTK::MobilizedBody::calcBodyMomentumAboutBodyOriginInGround 	( 	const State &  	state	) 	
+			
             const SimTK::SpatialVec& reactionOnBodyAtMobilizerFrame = mb.findMobilizerReactionOnBodyAtMInGround(ws);
             const SimTK::SpatialVec& reactionOnParentAtMobilizerFrame = mb.findMobilizerReactionOnParentAtFInGround(ws);
+						
+            //const SimTK::SpatialVec& bodyMomentumAboutBodyOriginInGround = mb_notconst.calcBodyMomentumAboutBodyOriginInGround(ws);
+            //const SimTK::SpatialVec& bodyMomentumAboutBodyMassCenterInGround = mb_notconst.calcBodyMomentumAboutBodyMassCenterInGround(ws);
 			
 			/* std::cout << "Additonal mobilizer data: " << std::endl;
 			std::cout << "  --> pin angle: " << pinAngle << "; pin rate: " << pinRate << std::endl;
@@ -674,6 +868,26 @@ void OpenSimSimulation::Step()
 						
 				    logger->logData(mobod_add_id,tmpStr.str());
 				  }
+				  
+				  /*std::string mobod_moment_id;
+				  {
+				    std::stringstream tmpStr;
+				    tmpStr << "Mobod_Moment_" << k;
+				    mobod_moment_id = tmpStr.str();
+					
+				    tmpStr.str("");
+				  
+				    tmpStr  << currentTime + timeStep
+						<< " " << bodyMomentumAboutBodyOriginInGround[0][0] << " " << bodyMomentumAboutBodyOriginInGround[0][1] << " " << bodyMomentumAboutBodyOriginInGround[0][2]
+						<< " " << bodyMomentumAboutBodyOriginInGround[1][0] << " " << bodyMomentumAboutBodyOriginInGround[1][1] << " " << bodyMomentumAboutBodyOriginInGround[1][2]
+						<< " " << bodyMomentumAboutBodyMassCenterInGround[0][0] << " " << bodyMomentumAboutBodyMassCenterInGround[0][1] << " " << bodyMomentumAboutBodyMassCenterInGround[0][2]
+						<< " " << bodyMomentumAboutBodyMassCenterInGround[1][0] << " " << bodyMomentumAboutBodyMassCenterInGround[1][1] << " " << bodyMomentumAboutBodyMassCenterInGround[1][2]
+						<< "\n";
+						
+				    logger->logData(mobod_moment_id,tmpStr.str());
+				  }*/
+				  
+				  //momentum (angular, linear) measured and expressed in Ground, but taken about the body origin - momentum (angular, linear) measured and expressed in Ground, but taken about the body mass center
 				}
 			}
 			
@@ -927,40 +1141,67 @@ void OpenSimSimulation::Step()
           //std::cout << fLabels[m] << " = " << fValues[m] << ";";
           std::cout << fLabels[m] << " = " << fValues[m] << "\n";
 		} */
-	if(logger)
-	{
-		std::string force_id;
+		if(logger)
 		{
-			std::stringstream tmpStr;
-			tmpStr << "Force_" << u;
-			force_id = tmpStr.str();
-			
-			tmpStr.str("");
-			
-			tmpStr  << currentTime;
-			for (int m = 0; m < fValues.size(); ++m)
+			std::string force_id;
 			{
-				tmpStr << " " << fValues[m];
+				std::stringstream tmpStr;
+				tmpStr << "Force_" << u;
+				force_id = tmpStr.str();
+				
+				tmpStr.str("");
+				
+				tmpStr  << currentTime;
+				for (int m = 0; m < fValues.size(); ++m)
+				{
+					tmpStr << " " << fValues[m];
+				}
+				tmpStr << "\n";
+				
+				logger->logData(force_id,tmpStr.str());
 			}
-			tmpStr << "\n";
-			
-			logger->logData(force_id,tmpStr.str());
 		}
-	}
 
         std::cout << std::endl;
         SimTK::ForceIndex force_idx = force->getForceIndex();
-        const SimTK::Force& simTkForce = osimModel->getForceSubsystem().getForce(force_idx);
+        const SimTK::Force& simTkForce = osimModel->getForceSubsystem().getForce(force_idx);		
+		
+		if (force->getConcreteClassName().compare("CoordinateLimitForce") == 0) // not great, but works
+		{
+		  OpenSim::CoordinateLimitForce* osimCoordLimForce = static_cast<OpenSim::CoordinateLimitForce*>(force);
+          std::cout << "  CoordinateLimitForce: " << osimCoordLimForce->calcLimitForce(istate) << "\n" << std::endl;
+          std::cout << "  CoordinateLimitForce: " << osimCoordLimForce->calcLimitForce(istate) << "\n" << std::endl;
+			
+		  std::stringstream tmpStr;
+		  tmpStr << "CoordForce_" << force->getName();
+		  std::string coord_force_id = tmpStr.str();
+		
+		  tmpStr.str("");
+		  
+		  tmpStr  << currentTime << " " << osimCoordLimForce->calcLimitForce(istate) << "\n";
+		
+		  logger->logData(coord_force_id,tmpStr.str());	
+		}
+		
         if (SimTK::HuntCrossleyForce::isInstanceOf(simTkForce))
         {
           const SimTK::HuntCrossleyForce* hkf = (const SimTK::HuntCrossleyForce*)(&simTkForce);
-          std::cout << "  HuntCrossleyForce: " << hkf->getTransitionVelocity() << std::endl;
+          std::cout << "  HuntCrossleyForce: " << hkf->getTransitionVelocity() << "\n" << std::endl;
         }
 
         if (SimTK::ElasticFoundationForce::isInstanceOf(simTkForce))
         {
           const SimTK::ElasticFoundationForce* eff = (const SimTK::ElasticFoundationForce*)(&simTkForce);
-          std::cout << "  ElasticFoundationForce: " << eff->getTransitionVelocity() << std::endl;
+          std::cout << "  ElasticFoundationForce: " << eff->getTransitionVelocity() << "\n" << std::endl;
+		  
+        }
+
+        //if (SimTK::ConveyorBeltForce::isInstanceOf(simTkForce))
+		if (force->getConcreteClassName().compare("ConveyorBeltForce") == 0) // not great, but works
+        {
+          SimTK::ConveyorBeltForce* cbf = const_cast<SimTK::ConveyorBeltForce*>( (const SimTK::ConveyorBeltForce*)(&simTkForce) );
+          std::cout << "  ConveyorBeltForce: " << cbf->getTransitionVelocity() << std::endl;
+          std::cout << "  ConveyorBeltForce intersection: " << cbf->getConveyorIntersectionHappened() << "\n" << std::endl;
 		  
         }
       }
