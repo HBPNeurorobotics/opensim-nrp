@@ -440,7 +440,7 @@
 					</ConveyorBeltForce::ContactParametersSet>
 					<!--Slip velocity (creep) at which peak static friction occurs.-->
 					<transition_velocity>0.01</transition_velocity>
-					<conveyor_force_direction>100 0 0</conveyor_force_direction>
+					<conveyor_force_direction>0 0 0</conveyor_force_direction>
 				</ConveyorBeltForce>
 				<CoordinateLimitForce name="sacroiliac_pin_joint_limit">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
