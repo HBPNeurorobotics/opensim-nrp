@@ -144,6 +144,10 @@ find_path(Simbody_INCLUDE_DIR
     DOC "Location of top-level installed Simbody header files"
     )
 
+# Mwelter: This does not work for me since the headers in my simbody-3.5.4 
+# installation are located in include/simbody/
+# To fix the resulting errors we can just point SimTK_INSTALL_DIR as a new 
+# cached cmake variable to the proper location 
 get_filename_component(Simbody_ROOT_DIR_TEMP "${Simbody_INCLUDE_DIR}" PATH)
 # tst Anfang
 if (SimTK_INSTALL_DIR)
@@ -179,7 +183,6 @@ endif()
 #########################
 # UNVERSIONED LIBRARIES #
 #########################
-
 # if (BUILD_UNVERSIONED_LIBRARIES)
 # Find out which of the unversioned libraries are available.
 find_library(Simbody_LIBRARY NAMES ${NS}SimTKsimbody
@@ -210,7 +213,6 @@ find_library(Simbody_STATIC_DEBUG_LIBRARY NAMES ${NS}SimTKsimbody_static_d
           /usr/lib/x86_64-linux-gnu
     DOC "This is the main Simbody static debug library."
     NO_DEFAULT_PATH)
-
 
 # Set composite Simbody_LIBRARIES variable
 set(LIBS)

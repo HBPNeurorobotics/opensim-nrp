@@ -30,6 +30,10 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
+# The trickery with postfixes should not be necessary as cmake will know the exact
+# name of the dll from its internal representation. In fact this code does not build
+# things in the right order in parallel builds (-j 4)
+# See also the suggested solution here: http://stackoverflow.com/questions/17865072/linking-against-a-debug-version-of-a-library-with-cmake
 LINK_LIBRARIES( debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
 		debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
 		debug osimActuators${CMAKE_DEBUG_POSTFIX} optimized osimActuators
