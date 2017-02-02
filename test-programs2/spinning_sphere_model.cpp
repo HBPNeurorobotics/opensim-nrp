@@ -6,7 +6,7 @@ using SimTK::Vec3;
 using namespace std;
 
 
-void testBouncingSphere() // actually it is just sitting there at the moment
+void testSpinningSphere() // actually it is just sitting there at the moment
 {
         double radius = 1.0;
         double start_height = 2.0;
@@ -18,33 +18,47 @@ void testBouncingSphere() // actually it is just sitting there at the moment
         OpenSim::Body& osimGround = osimModel.getGroundBody();
         osimModel.setGravity(Vec3(0));
         
-        std::unique_ptr<OpenSim::Body> osimSphere = std::make_unique<OpenSim::Body>("sphere", mass, Vec3(0), mass * SimTK::Inertia::sphere(radius));
+        auto osimSphere = std::make_unique<OpenSim::Body>("sphere", mass, Vec3(0), mass * SimTK::Inertia::sphere(radius));
 
         Vec3 locationInParent(0), orientationInParent(0), locationInBody(0), orientationInBody(0);
         
-        OpenSim::FreeJoint blockToGround("sphereToGround", 
+        /* This instance is made known to the system by handing a reference to itself to 
+         * its body (not the parent body). This is done in the constructor. Later,
+         * Body::connectToModel also invoces Joint::connectToModel.
+         * Oddly, the joint is not owned by the body, nor does it appear to be owned by
+         * the system.
+         */
+        auto blockToGround = std::make_unique<OpenSim::FreeJoint>("sphereToGround", 
             osimGround, locationInParent, orientationInParent, // specify parent and anchor point in its frame (?)
             *osimSphere, locationInBody, orientationInBody // specify child and the anchor point
         );
         
         // What each value means depends on the type of joint ?????
         // For FreeJoint we have 3 angles and after that 3 position coordinates.
-        OpenSim::CoordinateSet& jointCoordinateSet = blockToGround.upd_CoordinateSet();
+        OpenSim::CoordinateSet& jointCoordinateSet = blockToGround->upd_CoordinateSet();
         jointCoordinateSet[4].setDefaultValue(start_height); // set y-translation which is height
         jointCoordinateSet[0].setDefaultSpeedValue(3.14 * 2.);  // 2 pi per sec ?!
         
         // Model takes ownership!        
+        // However, we could use osimModel.updBodySet().setMemoryOwner(false);
+        // to keep owenership of the body, and all bodies and possibly everything added to the model.
         osimModel.addBody(osimSphere.release());
-        
+                
         // Initialize the system and get the default state
         SimTK::State& osimState = osimModel.initSystem();
         
-        std::cout << "initial state\n";
-        std::cout << osimState.getQ() << std::endl;
-        
-        // Create the integrator for integrating system dynamics
+        // Must come after osimModel.initSystem, otherwise BOOM.
         SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
         integrator.setAccuracy(1.0e-6);
+        
+        // Regarding the life time of the joint: Deletion of blockToGround 
+        // at this point results in a segfault. Therefore, I think that 
+        // OpenSim::FreeJoint and friends must stay alive during the lifetime
+        // of the system.
+        /* blockToGround = nullptr; */ // BOOM!
+        
+        std::cout << "initial state\n";
+        std::cout << osimState.getQ() << std::endl;
         
         // Create the manager managing the forward integration and its outputs
         OpenSim::Manager manager(osimModel,  integrator);
@@ -63,6 +77,8 @@ void testBouncingSphere() // actually it is just sitting there at the moment
           if (++i > Nsteps) break;
           
           // Does the right thing! Starts at t and steps forward until t+dt.
+          // However, integrate does lots of wired sh**. Its probably going 
+          // to be really slow.
           manager.setInitialTime(t);
           manager.setFinalTime(t+dt);
           manager.integrate(osimState);
@@ -73,7 +89,7 @@ void testBouncingSphere() // actually it is just sitting there at the moment
 
 int main()
 {
-    try { testBouncingSphere(); }
+    try { testSpinningSphere(); }
     catch (const std::exception& e)
     {
                 cout << e.what() <<endl;
