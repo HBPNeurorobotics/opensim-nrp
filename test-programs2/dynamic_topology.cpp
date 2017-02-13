@@ -50,6 +50,31 @@ void testDynamicTopology()
         osimModel.updBodySet().setMemoryOwner(false);
         OpenSim::Manager manager(osimModel);
 
+        /* Some "local functions" for convenience */
+        
+        double t = 0;
+        auto do_step = [&]()
+        {
+          manager.setInitialTime(t);
+          manager.setFinalTime(t+dt);
+          manager.integrate(osimModel.updWorkingState());
+          t += dt;
+        };
+        
+        auto update_system = [&]()
+        {
+          /* Have to rebuild the system. Otherwise the internal Simbody representation
+          * will know nothing of our new body. State variables of first body are initialized
+          * from default values set above. */
+          osimModel.buildSystem();
+          auto integrator = IntegratorFactory(osimModel.getMultibodySystem());
+          // Setting a new integrator does not free the old one, so we have to do it manually.
+          delete &manager.getIntegrator();
+          manager.setIntegrator(integrator.release());
+          osimModel.initializeState();
+        };
+        
+        
         /* First body. And set initial conditions. */
         auto mob1 = std::make_unique<DemoMob>("mob1", osimGround);
         { OpenSim::CoordinateSet& jointCoordinateSet = mob1->joint.upd_CoordinateSet();
@@ -57,27 +82,16 @@ void testDynamicTopology()
         jointCoordinateSet[0].setDefaultSpeedValue(3.14 * 2.);  // 2 pi per sec ?!
         }
         osimModel.addBody(&mob1->body);
-
-        /* Final system setup to get ready for time stepping. */
-        osimModel.buildSystem();
-        auto integrator = IntegratorFactory(osimModel.getMultibodySystem());
-        manager.setIntegrator(integrator.get());
-        SimTK::State& osimState = osimModel.initializeState();
         
-        std::cout << "initial state\n";
-        std::cout << osimState.getQ() << std::endl;
+        update_system();
         
-        double t = 0;
-        auto do_step = [&]()
-        {
-          manager.setInitialTime(t);
-          manager.setFinalTime(t+dt);
-          manager.integrate(osimState);
-          t += dt;
-        };
+        std::cout << "Initial state\n";
+        std::cout << osimModel.getWorkingState().getQ() << std::endl;
 
+        /* Do time steps */
         for (int i=0; i<5; ++i)
         {
+          auto &osimState = osimModel.updWorkingState();
           osimModel.getMultibodySystem().realize(osimState, SimTK::Stage::Velocity);
 
           std::cout << "t = " << t << " state = " << osimState.getQ() << std::endl;
@@ -85,10 +99,7 @@ void testDynamicTopology()
           
           do_step();
         }
-        
-        osimModel.getMultibodySystem().realize(osimState, SimTK::Stage::Velocity);
-        std::cout << "intermediate 1 " << t << " state = " << osimState.getQ() << std::endl;
-        
+  
         /* Add second body. */
         auto mob2 = std::make_unique<DemoMob>("mob2", osimGround);
         { OpenSim::CoordinateSet& jointCoordinateSet = mob2->joint.upd_CoordinateSet();
@@ -97,11 +108,11 @@ void testDynamicTopology()
         }
         osimModel.addBody(&mob2->body);
 
-        std::cout << "intermediate 2 " << t << " state = " << osimState.getQ() << std::endl;
-        
         /* OpenSim provides persistent storage of initial states in the Coordinate class 
          * which we divert slightly from its intended use. */
-        { OpenSim::CoordinateSet& jc = mob1->joint.upd_CoordinateSet();
+        { 
+          auto &osimState = osimModel.updWorkingState();
+          OpenSim::CoordinateSet& jc = mob1->joint.upd_CoordinateSet();
           for (int i=0; i<mob1->joint.numCoordinates(); ++i)
           {
             jc[i].setDefaultValue(jc[i].getValue(osimState));
@@ -109,16 +120,12 @@ void testDynamicTopology()
           }
         }
 
-        /* Have to rebuild the system. Otherwise the internal Simbody representation
-         * will know nothing of our new body. State variables of first body are initialized
-         * from default values set above. */
-        osimModel.buildSystem();
-        integrator = IntegratorFactory(osimModel.getMultibodySystem());
-        manager.setIntegrator(integrator.get());
-        osimState = osimModel.initializeState();
+        update_system();
         
+        /* Do more time steps */
         for (int i=0; i<5; ++i)
         {
+          auto &osimState = osimModel.updWorkingState();
           osimModel.getMultibodySystem().realize(osimState, SimTK::Stage::Velocity);
 
           std::cout << "t = " << t << " state = " << osimState.getQ() << std::endl;
@@ -127,8 +134,32 @@ void testDynamicTopology()
           do_step();
         }
         
-        // BUG: Manager thinks it owns the integrator when it does not. So trick it into deleting a nullptr which is a nop(?).
-        manager.setIntegrator(nullptr);
+        /* Lets try to remove the first body */
+        osimModel.updBodySet().remove(&mob1->body);
+        mob1 = nullptr; // delete
+        
+        { 
+          auto &osimState = osimModel.updWorkingState();
+          OpenSim::CoordinateSet& jc = mob2->joint.upd_CoordinateSet();
+          for (int i=0; i<mob2->joint.numCoordinates(); ++i)
+          {
+            jc[i].setDefaultValue(jc[i].getValue(osimState));
+            jc[i].setDefaultSpeedValue(jc[i].getSpeedValue(osimState)); 
+          }
+        }
+
+        update_system();
+        
+        /* Take some final time steps */
+        for (int i=0; i<5; ++i)
+        {
+          auto &osimState = osimModel.updWorkingState();
+          osimModel.getMultibodySystem().realize(osimState, SimTK::Stage::Velocity);
+
+          std::cout << "t = " << t << " state = " << osimState.getQ() << std::endl;
+          std::cout << "mob2 pose = " << osimModel.getSimbodyEngine().getTransform(osimState, mob2->body) << std::endl;
+          do_step();
+        }
 }
 
 
