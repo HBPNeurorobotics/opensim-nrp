@@ -101,7 +101,7 @@ void OpenSimSimulation::Init()
       integrator = new SimTK::RungeKuttaMersonIntegrator(osimModel->getMultibodySystem());
       integrator->setAccuracy(1.0e-6);
 
-      osimManager = new OpenSim::Manager(*osimModel); 
+      osimManager = new OpenSim::Manager(*osimModel, *integrator); 
 	  
       //////////////
       /*const OpenSim::JointSet& joints = osimModel->getJointSet();

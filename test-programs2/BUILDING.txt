@@ -1,0 +1,3 @@
+Build it like so, where local_deb is my install directory analogous to /usr/local:
+
+cmake -DCMAKE_BUILD_TYPE=Debug -DSimbody_ROOT_DIR=/mnt/data/NRP/local_deb -DSimTK_INSTALL_DIR=/mnt/data/NRP/local_deb -DOPENSIM_INSTALL_DIR=/mnt/data/NRP/local_deb ..
