@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="30000">
+<Model>
+<ForceSet>
+        <objects>
+          <Millard2012EquilibriumMuscle name="fatigable">
+              <!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
+              <isDisabled>false</isDisabled>
+              <!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+              <min_control>0</min_control>
+              <!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+              <max_control>1</max_control>
+              <!--The set of points defining the path of the muscle.-->
+              <GeometryPath>
+                      <PathPointSet>
+                              <objects>
+                                      <PathPoint name="muscle1-point1">
+                                              <location> 0 0.05 -0.35</location>
+                                              <body>ground</body>
+                                      </PathPoint>
+                                      <PathPoint name="muscle1-point2">
+                                              <location> 0 0 -0.05</location>
+                                              <body>block</body>
+                                      </PathPoint>
+                              </objects>
+                              <groups />
+                      </PathPointSet>
+                      <VisibleObject>
+                              <!--Set of geometry files and associated attributes, allow .vtp, .stl, .obj-->
+                              <GeometrySet>
+                                      <objects />
+                                      <groups />
+                              </GeometrySet>
+                              <!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+                              <scale_factors> 1 1 1</scale_factors>
+                              <!--transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz-->
+                              <transform> -0 0 -0 0 0 0</transform>
+                              <!--Whether to show a coordinate frame-->
+                              <show_axes>false</show_axes>
+                              <!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries-->
+                              <display_preference>4</display_preference>
+                      </VisibleObject>
+                      <PathWrapSet>
+                              <objects />
+                              <groups />
+                      </PathWrapSet>
+              </GeometryPath>
+              <!--Maximum isometric force that the fibers can generate-->
+              <max_isometric_force>1000</max_isometric_force>
+              <!--Optimal length of the muscle fibers-->
+              <optimal_fiber_length>0.2</optimal_fiber_length>
+              <!--Resting length of the tendon-->
+              <tendon_slack_length>0.1</tendon_slack_length>
+              <!--Angle between tendon and fibers at optimal fiber length expressed in radians-->
+              <pennation_angle_at_optimal>0</pennation_angle_at_optimal>
+              <!--assumed initial fiber length if none is assigned.-->
+              <default_fiber_length>0.2</default_fiber_length>
+              <!--activation dynamics model with a lower bound-->
+              <MuscleFirstOrderActivationDynamicModel>
+                      <!--activation lower bound-->
+                      <minimum_activation>0.01</minimum_activation>
+              </MuscleFirstOrderActivationDynamicModel>
+              <!--assumed initial activation level if none is assigned.-->
+              <default_activation>0.01</default_activation>
+              <!--active force length curve-->
+              <ActiveForceLengthCurve>
+                      <!--All properties of this object have their default values.-->
+              </ActiveForceLengthCurve>
+              <!--force velocity inverse curve-->
+              <ForceVelocityInverseCurve>
+                      <!--All properties of this object have their default values.-->
+              </ForceVelocityInverseCurve>
+              <!--fiber force length curve-->
+              <FiberForceLengthCurve>
+                      <!--All properties of this object have their default values.-->
+              </FiberForceLengthCurve>
+              <!--Tendon force length curve-->
+              <TendonForceLengthCurve>
+                      <!--All properties of this object have their default values.-->
+              </TendonForceLengthCurve>
+              <!--percentage of active motor units that fatigue in unit time-->
+              <fatigue_factor>0.3</fatigue_factor>
+              <!--percentage of fatigued motor units that recover in unit time-->
+              <recovery_factor>0.2</recovery_factor>
+          </Millard2012EquilibriumMuscle>
+        </objects>
+        <groups />
+</ForceSet>
+</Model>
+</OpenSimDocument>

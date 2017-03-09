@@ -6,6 +6,79 @@ using namespace std;
 
 #include<cassert>
 #include<memory>
+#include<unordered_map>
+
+
+class OSIMSIMULATION_API ExternalControlController : public Controller 
+{
+    OpenSim_DECLARE_CONCRETE_OBJECT(ExternalControlController, Controller);
+  public:
+        ExternalControlController();
+        virtual ~ExternalControlController();
+
+        /**
+         * Compute the control values for all actuators under the control of this
+         * Controller.
+         *
+         * @param s             system state 
+         * @param controls      model controls  
+         */
+        void computeControls(const SimTK::State& s, 
+                             SimTK::Vector& controls) const OVERRIDE_11;
+
+        /**
+         *      Assign a prescribe control value for the desired actuator identified
+         *  by its name. Controller takes ownership of the function.
+         *  @param actName                the actuator's name in the controller's set
+         */
+        void setControlValueForActuator(Actuator *actuator, double value);
+        
+protected:
+        /** Model component interface */
+        void connectToModel(Model& model) OVERRIDE_11;
+        
+        std::unordered_map<Actuator*, double> control_values;
+};     
+
+
+ExternalControlController::ExternalControlController() :
+        Controller()
+{
+}
+
+ExternalControlController::~ExternalControlController()
+{
+}
+
+
+void ExternalControlController::connectToModel(Model& model)
+{
+        Super::connectToModel(model);
+}
+
+
+// compute the control value for an actuator
+void ExternalControlController::computeControls(const SimTK::State& s, SimTK::Vector& controls) const
+{
+        SimTK::Vector actControls(1, 0.0);
+        for(int i=0; i<getActuatorSet().getSize(); i++)
+        {
+          Actuator &act = getActuatorSet()[i];
+          actControls[0] = const_cast<ExternalControlController*>(this)->control_values[&act];
+          act.addInControls(actControls, controls);
+        }  
+}
+
+
+void ExternalControlController::
+        setControlValueForActuator(Actuator *actuator, double value)
+{
+  this->control_values[actuator] = value;
+}
+
+
+
+#define USE_MANAGER
 
 int main()
 {
@@ -15,11 +88,18 @@ int main()
   double constantDistance = 0.2;
   // Contact parameters
   double stiffness = 1.0e7, dissipation = 0.1, friction = 0.2, viscosity=0.01;
-
+  
+  Object::clearArrayPropertiesOnUpdateFromXML = false;
+  
   // Create an OpenSim model and set its name
   Model osimModel;
   osimModel.setName("tugOfWar");
-
+  
+#ifdef USE_MANAGER
+  // Create the manager managing the forward integration and its outputs
+  Manager manager(osimModel);
+#endif
+  
   // GROUND BODY
   // Get a reference to the model's ground body
   OpenSim::Body& ground = osimModel.getGroundBody();
@@ -147,7 +227,7 @@ int main()
   ///////////////////////////////////////////
   // WANT TO LOAD MUSCLE SYSTEM FROM FILE! //
   ///////////////////////////////////////////
-
+ 
 #if 0
   // MUSCLE FORCES
   // Create two new muscles with identical properties
@@ -167,20 +247,19 @@ int main()
   osimModel.addForce(muscle1);
   osimModel.addForce(muscle2);
 #endif
+  const char *files[2] = { "tug_of_war_muscle_definition1.osim", "tug_of_war_muscle_definition2.osim" };
+  for (const char* fn : files)
   {
-    std::unique_ptr<XMLDocument> document(new XMLDocument("tug_of_war_muscle_definition.osim"));
+    std::cout << "Loading " << fn << std::endl;
+    std::unique_ptr<XMLDocument> document(new XMLDocument(fn));
     SimTK::Xml::Element myNode =  document->getRootDataElement(); //either actual root or node after OpenSimDocument
     osimModel.updateFromXMLNode(myNode, document->getDocumentVersion());
   }
 
-  {  // Initialize the system and get the default state
-  SimTK::State& si = osimModel.initSystem();
-  // Print out details of the model
-  osimModel.printDetailedInfo(si, cout);}
-  
   ///////////////////////////////////
   // DEFINE CONTROLS FOR THE MODEL //
   ///////////////////////////////////
+#if 0
   // Create a prescribed controller that simply applies controls as function of time
   // For muscles, controls are normalized motor-neuron excitations
   PrescribedController *muscleController = new PrescribedController();
@@ -199,6 +278,7 @@ int main()
 
   // Add the muscle controller to the model
   osimModel.addController(muscleController);
+#endif
 
   ///////////////////////////////////
   // SPECIFY MODEL DEFAULT STATES  //
@@ -209,7 +289,20 @@ int main()
 
   assert(muscle1 != nullptr);
   assert(muscle2 != nullptr);
-
+  Actuator* muscles[2] = {
+    muscle1, muscle2
+  };
+  
+  
+#if 1
+  // Create a prescribed controller that simply applies controls as function of time
+  // For muscles, controls are normalized motor-neuron excitations
+  ExternalControlController *muscleController = new ExternalControlController();
+  muscleController->setActuators(osimModel.updActuators());
+  // Add the muscle controller to the model
+  osimModel.addController(muscleController);
+#endif
+  
   //////////////////////////
   // PERFORM A SIMULATION //
   //////////////////////////
@@ -219,6 +312,8 @@ int main()
 
   // Initialize the system and get the default state
   SimTK::State& si = osimModel.initSystem();
+  // Print out details of the model
+  osimModel.printDetailedInfo(si, cout);
   
   // Enable constraint consistent with current configuration of the model
   constDist->setDisabled(si, false);
@@ -237,22 +332,49 @@ int main()
   ForceReporter* reporter = new ForceReporter(&osimModel);
   osimModel.addAnalysis(reporter);
 
-  // Create the integrator for integrating system dynamics
-  SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-  integrator.setAccuracy(1.0e-6);
+  SimTK::RungeKuttaMersonIntegrator* integrator = new SimTK::RungeKuttaMersonIntegrator(osimModel.getMultibodySystem());
+  integrator->setAccuracy(1.0e-6);
   
-  // Create the manager managing the forward integration and its outputs
-  Manager manager(osimModel,  integrator);
+#ifdef USE_MANAGER
+  manager.setIntegrator(integrator);
+#else
+  // Create the integrator for integrating system dynamics
+  SimTK::TimeStepper ts(osimModel.getMultibodySystem(), *integrator);
+  ts.initialize(si);
+  ts.setReportAllSignificantStates(true);
+#endif
+  
+  double t = 0;
+  const double dt = 0.01;
+  for (int iter = 0; iter < 100; ++iter, t += dt)
+  {
+    osimModel.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
+    const SimTK::Vector& controls = osimModel.getControls(si);
+    std::cout << "t = " << iter << " ctrl = " << controls << std::endl;
 
-  // Print out details of the model
-  osimModel.printDetailedInfo(si, cout);
+#ifdef USE_MANAGER
+    manager.setInitialTime(t);
+    manager.setFinalTime(t + dt);
+    manager.integrate(si);
+    for (int i=0; i<2; ++i)
+    {
+      double a = std::sin(t * 3.14 + i * 1.57);
+      muscleController->setControlValueForActuator(muscles[i], a*a);
+    }
+#else
+    // NOTE: Not working ... :-(
+//     SimTK::Vector& controls = osimModel.updControls(si);
+//     
+//     for (int i=0; i<controls.size(); ++i)
+//     {
+//       double a = std::sin(t * 3.14 + i * 1.57);
+//       controls[i] = a*a;
+//     }
+    if(osimModel.isControlled())
+      osimModel.updControllerSet().storeControls(si, iter);
+    SimTK::Integrator::SuccessfulStepStatus status = ts.stepTo(t+dt);
+#endif
+  }
 
-  // Integrate from initial time to final time
-  manager.setInitialTime(initialTime);
-  manager.setFinalTime(finalTime);
-  cout<<"\nIntegrating from "<<initialTime<<" to "<<finalTime<<endl;
-  manager.integrate(si);
-
-  reporter->getForceStorage().print("tugOfWar_forces.mot");
   return 0;
 }
